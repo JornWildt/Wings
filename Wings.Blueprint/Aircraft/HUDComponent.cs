@@ -107,14 +107,14 @@ namespace Wings.Blueprint.Aircraft
 
     public void DrawAirspeed(SpriteBatch spriteBatch)
     {
-      string text = $"Airspeed: {Converters.MetersSecondToKilometersHour(Aircraft.CurrentAirspeed):N1} km/h ({Converters.MetersSecondToKilometersHour(AircraftPhysics.Velocity.X):N1}/{Converters.MetersSecondToKilometersHour(AircraftPhysics.Velocity.Y):N1}/{Converters.MetersSecondToKilometersHour(AircraftPhysics.Velocity.Z):N1})";
+      string text = $"Airspeed: {Converters.MetersSecondToKilometersHour(Aircraft.CurrentAirspeed):N1} km/h ({Converters.MetersSecondToKilometersHour(AircraftPhysics.Velocity.X):N1}/{Converters.MetersSecondToKilometersHour(AircraftPhysics.Velocity.Y):N1}/{Converters.MetersSecondToKilometersHour(AircraftPhysics.Velocity.Z):N1}). Vrot = ({AircraftPhysics.RotationalVelocity.X:N3} / {AircraftPhysics.RotationalVelocity.Y:N3} / {AircraftPhysics.RotationalVelocity.Z:N3})";
       spriteBatch.DrawString(DialFont, text, AirspeedLocation, Color.Black);
     }
 
 
     public void DrawHeight(SpriteBatch spriteBatch)
     {
-      string text = $"Height: {AircraftBody.Position.Z:N0} m";
+      string text = $"Height: {AircraftBody.Position.Z:N0} m. Rotation: ({AircraftBody.Rotation.X:N1} / {AircraftBody.Rotation.Y:N1} / {AircraftBody.Rotation.Z:N1}). ForwardVector: ({AircraftBody.ForwardUnitVector.X:N1} / {AircraftBody.ForwardUnitVector.Y:N1} / {AircraftBody.ForwardUnitVector.Z:N1})";
       spriteBatch.DrawString(DialFont, text, HeightLocation, Color.Black);
     }
 

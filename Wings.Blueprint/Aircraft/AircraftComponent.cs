@@ -37,11 +37,14 @@ namespace Wings.Blueprint.Aircraft
 
     const float MaxPitch = Angles.QuarterCircle;
 
-    const float MaxRollSpeed = Angles.FullCircle / 10;
-    const float MaxPitchSpeed = Angles.FullCircle / 10;
+    const float MaxRollRate = Angles.FullCircle / 4;
+    const float MaxPitchRate = Angles.FullCircle / 10;
 
     public void Update(GameEnvironment environment, TimeSpan elapsedTime)
     {
+      if (InitialMousePosition == null)
+        Mouse.SetPosition(600, 300);
+
       MouseState mouseState = Mouse.GetState();
 
       if (InitialMousePosition == null || mouseState.LeftButton == ButtonState.Pressed)
@@ -67,27 +70,37 @@ namespace Wings.Blueprint.Aircraft
 
       KeyboardState keyboard = Keyboard.GetState();
 
-      if (keyboard.IsKeyDown(Keys.A))
+      if (keyboard.IsKeyDown(Keys.Q))
         CurrentThrottle += 0.01f;
-      else if (keyboard.IsKeyDown(Keys.Z))
+      else if (keyboard.IsKeyDown(Keys.A))
         CurrentThrottle -= 0.01f;
 
       CurrentThrottle = MathHelper.Clamp(CurrentThrottle, 0, 1);
 
       AircraftPhysics.RotationalVelocity = new Vector3(
-        MaxRollSpeed * CurrentStickPosition.X,
-        MaxPitchSpeed * CurrentStickPosition.Y,
-        0);
+        MaxRollRate * CurrentStickPosition.X,
+        MaxPitchRate * CurrentStickPosition.Y * MathF.Cos(AircraftBody.Rotation.X),
+        MaxPitchRate * CurrentStickPosition.Y * MathF.Sin(AircraftBody.Rotation.X));
 
-      CurrentAirspeed = Vector3.Dot(AircraftBody.DirectionalVector, AircraftPhysics.Velocity);
+      CurrentAirspeed = Vector3.Dot(AircraftBody.ForwardUnitVector, AircraftPhysics.Velocity);
 
       float restrictedAirspeed = MathHelper.Clamp(CurrentAirspeed, 0, MaxAirspeed);
 
-      float lift = (CurrentAirspeed / 30f) * 9.81f; // So far lift is in "acceleration" unit
-      float forwardPull = CurrentThrottle * (MaxAirspeed - restrictedAirspeed) * 2; // pull in "acceleration" unit
-      float drag = (restrictedAirspeed / MaxAirspeed) * -2; // drag in "acceleration" unit
+      // Max lift is at max air speed * factor of gravity (factor should be >1 to counter gravity at max speed)
+      float lift = (CurrentAirspeed / MaxAirspeed)* 2f * 9.81f; // So far lift is in "acceleration" unit
+      float forwardPull = (CurrentThrottle * (MaxAirspeed - restrictedAirspeed)/ MaxAirspeed) * 10; // pull in "acceleration" unit
 
-      AircraftPhysics.Acceleration = new Vector3(0, 0, lift) + AircraftBody.DirectionalVector * forwardPull + AircraftPhysics.Velocity * drag;
+      float drag = (restrictedAirspeed * restrictedAirspeed / (MaxAirspeed * MaxAirspeed)) * -10; // drag in "acceleration" unit
+
+      var liftVector = new Vector3(
+          0,//lift * (float)Math.Cos(AircraftBody.Rotation.X) * (float)Math.Sin(AircraftBody.Rotation.Y),
+          0, //lift * (float)Math.Sin(AircraftBody.Rotation.X) * (float)Math.Cos(AircraftBody.Rotation.Z),
+          lift * MathF.Cos(AircraftBody.Rotation.X) * MathF.Cos(AircraftBody.Rotation.Y));
+
+      AircraftPhysics.Acceleration = 
+       liftVector
+        + AircraftBody.ForwardUnitVector * forwardPull 
+        + AircraftPhysics.VelocityUnitVector * drag;
     }
   }
 }
