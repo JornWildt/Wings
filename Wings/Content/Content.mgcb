@@ -37,6 +37,13 @@
 /processorParam:TextureFormat=Color
 /build:DarkBall.png
 
+#begin File.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:File.spritefont;HUD.spritefont
+
 #begin Horizon.png
 /importer:TextureImporter
 /processor:TextureProcessor

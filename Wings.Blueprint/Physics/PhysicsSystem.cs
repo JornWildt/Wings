@@ -7,11 +7,13 @@ namespace Wings.Blueprint.Physics
 {
   public class PhysicsSystem : ISystem
   {
+    private readonly Vector3 Gravity = new Vector3(0, 0, -9.81f);
+
     public Task Update(GameEnvironment environment, TimeSpan elapsedTime)
     {
       foreach (var p in environment.Entities.GetComponents<BodyComponent, PhysicsComponent>())
       {
-        p.Item2.Velocity += p.Item2.Acceleration;
+        p.Item2.Velocity += (p.Item2.Acceleration + Gravity) * (float)elapsedTime.TotalSeconds;
 
         p.Item1.Position += p.Item2.Velocity * (float)elapsedTime.TotalSeconds;
         p.Item1.Rotation += p.Item2.RotationalVelocity * (float)elapsedTime.TotalSeconds;
@@ -22,6 +24,8 @@ namespace Wings.Blueprint.Physics
             MathHelper.WrapAngle(p.Item1.Rotation.Y),
             MathHelper.WrapAngle(p.Item1.Rotation.Z)
           );
+        
+        p.Item1.DirectionalVector = Converters.RotationRadiansToUnitVector(p.Item1.Rotation);
       }
 
       return Task.CompletedTask;

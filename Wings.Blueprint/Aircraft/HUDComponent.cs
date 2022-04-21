@@ -14,6 +14,8 @@ namespace Wings.Blueprint.Aircraft
 
     private BodyComponent AircraftBody { get; set; }
 
+    private PhysicsComponent AircraftPhysics { get; set; }
+
 
     private Texture2D HorizonTexture;
     private Texture2D ControlStickFaceTexture;
@@ -24,17 +26,30 @@ namespace Wings.Blueprint.Aircraft
     private Vector2 ControlStickBallLocation;
     private Vector2 ControlStickScale;
 
+    private SpriteFont DialFont;
 
-    public HUDComponent(EntityId id, AircraftComponent aircraft, BodyComponent aircraftBody)
+    private Vector2 VerticalSpeedLocation;
+    private Vector2 AirspeedLocation;
+    private Vector2 HeightLocation;
+    private Vector2 ThrottleLocation;
+
+
+    public HUDComponent(EntityId id, AircraftComponent aircraft)
       : base(id)
     {
       Aircraft = aircraft;
-      AircraftBody = aircraftBody;
+      AircraftBody = aircraft.AircraftBody;
+      AircraftPhysics = aircraft.AircraftPhysics;
 
       ControlStickScale = new Vector2(0.25f, 0.25f);
       ControlStickLocation = new Vector2(600, 300);
       ControlStickFaceLocation = ControlStickLocation - new Vector2(100, 100) * ControlStickScale;
       ControlStickBallLocation = ControlStickLocation - new Vector2(20, 20) * ControlStickScale;
+
+      VerticalSpeedLocation = new Vector2(50, 300);
+      AirspeedLocation = new Vector2(50, 320);
+      HeightLocation = new Vector2(50, 340);
+      ThrottleLocation = new Vector2(50, 280);
     }
 
 
@@ -43,6 +58,7 @@ namespace Wings.Blueprint.Aircraft
       HorizonTexture = content.Load<Texture2D>("Horizon");
       ControlStickBallTexture = content.Load<Texture2D>("DarkBall");
       ControlStickFaceTexture = content.Load<Texture2D>("ControlStickFace");
+      DialFont = content.Load<SpriteFont>("HUD");
       base.LoadContent(content);
     }
 
@@ -51,6 +67,10 @@ namespace Wings.Blueprint.Aircraft
     {
       DrawControlStick(spriteBatch);
       DrawHorizon(spriteBatch);
+      DrawVerticalSpeed(spriteBatch);
+      DrawAirspeed(spriteBatch);
+      DrawHeight(spriteBatch);
+      DrawThrottle(spriteBatch);
     }
 
 
@@ -75,6 +95,34 @@ namespace Wings.Blueprint.Aircraft
       var scale = new Vector2(1, 1);
 
       spriteBatch.Draw(HorizonTexture, position, null, Color.White, rollAngle, origin, scale, SpriteEffects.None, 0);
+    }
+
+
+    public void DrawVerticalSpeed(SpriteBatch spriteBatch)
+    {
+      string text = $"Vertical speed: {AircraftPhysics.Velocity.Z:N1} m/s";
+      spriteBatch.DrawString(DialFont, text, VerticalSpeedLocation, Color.Black);
+    }
+
+
+    public void DrawAirspeed(SpriteBatch spriteBatch)
+    {
+      string text = $"Airspeed: {Converters.MetersSecondToKilometersHour(Aircraft.CurrentAirspeed):N1} km/h ({Converters.MetersSecondToKilometersHour(AircraftPhysics.Velocity.X):N1}/{Converters.MetersSecondToKilometersHour(AircraftPhysics.Velocity.Y):N1}/{Converters.MetersSecondToKilometersHour(AircraftPhysics.Velocity.Z):N1})";
+      spriteBatch.DrawString(DialFont, text, AirspeedLocation, Color.Black);
+    }
+
+
+    public void DrawHeight(SpriteBatch spriteBatch)
+    {
+      string text = $"Height: {AircraftBody.Position.Z:N0} m";
+      spriteBatch.DrawString(DialFont, text, HeightLocation, Color.Black);
+    }
+
+
+    public void DrawThrottle(SpriteBatch spriteBatch)
+    {
+      string text = $"Throttle: {Aircraft.CurrentThrottle*100:N0}%";
+      spriteBatch.DrawString(DialFont, text, ThrottleLocation, Color.Black);
     }
   }
 }

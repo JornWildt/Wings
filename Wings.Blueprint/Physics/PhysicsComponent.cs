@@ -11,6 +11,7 @@ namespace Wings.Blueprint.Physics
 
     public Vector3 RotationalVelocity { get; set; }
 
+
     public PhysicsComponent(EntityId id, Vector3 velocity, Vector3 acceleration, Vector3 rotationalVelocity)
       : base(id)
     {

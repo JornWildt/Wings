@@ -37,7 +37,7 @@ namespace Wings.Blueprint
           new NamedComponent(id, "Aircraft"),
           aircraftBody,
           aircraftPhysics,
-          new HUDComponent(id, aircraft, aircraftBody),
+          new HUDComponent(id, aircraft),
           aircraft
         });
 
