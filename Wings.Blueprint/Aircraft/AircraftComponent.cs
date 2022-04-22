@@ -50,35 +50,47 @@ namespace Wings.Blueprint.Aircraft
 
     private void ApplyAerodynamics()
     {
+      // Current airspeed depends on angle between fuselage forward direction and actual directional velocity.
+      // - it could in principle be falling vertically with the plane level, yielding zero airspeed over the wing.
       CurrentAirspeed = Vector3.Dot(AircraftBody.ForwardUnitVector, AircraftPhysics.Velocity);
+
+      // Angle of attack is the angle between the fuselage direction and the directional velocity.
+      // - This does although not handle side slipping, but then airspeed would be zero anyway.
       CurrentAngleOfAttack = Converters.AngleBetweenVectors(AircraftBody.ForwardUnitVector, AircraftPhysics.Velocity);
 
-      if (float.IsNaN(CurrentAirspeed) || float.IsNaN(CurrentAngleOfAttack))
-        throw new InvalidOperationException("CurrentAirSpeed or CurrentAngleOfAttack is NaN");
-
+      // Figure out which way the angle of attack is. This depends on the roll.
+      // Cross product yields vector normal to fuselage forward and directional velocity
       var crossProd = Vector3.Cross(AircraftBody.ForwardUnitVector, Vector3.Normalize(AircraftPhysics.Velocity));
+
+      // Dot with a normal along the aircrafts Y axis (yaw axis - a vector along the wing).
+      // The sign indicates direction of angle of attack
       var dot = Vector3.Dot(crossProd, new Vector3(0, 1, 0)); // FIXME: must depend on rotation
       if (dot < 0)
         CurrentAngleOfAttack = -CurrentAngleOfAttack;
 
+      // Get angle of attack in degrees as it is easier to work with (since wing lift is relative to AoA in degrees)
       float aoaWingDeg = MathHelper.ToDegrees(CurrentAngleOfAttack) + 4 /* wing incidence */;
       float aoaElevatorDeg = MathHelper.ToDegrees(CurrentAngleOfAttack);
 
+      // Rotational velocity depends on stick position
       AircraftPhysics.RotationalVelocity = new Vector3(
         0,//MaxRollRate * CurrentStickPosition.X,
         MaxPitchRate * CurrentStickPosition.Y * MathF.Cos(AircraftBody.Rotation.X),
         0);// MaxPitchRate * CurrentStickPosition.Y * MathF.Sin(AircraftBody.Rotation.X) + rudderYaw);
 
+      // Apply "weather wane" effect of vertical and horizontal stabilizers.
       AircraftPhysics.RotationalVelocity = AircraftPhysics.RotationalVelocity + new Vector3(
         0,
         -(aoaElevatorDeg / 4.0f) * MaxPitchRate,
         0);
 
+      // Clamp airspeed to reduce calculation issues when falling too fast. This is only a stop gap solution.
       float restrictedAirspeed = MathHelper.Clamp(CurrentAirspeed, 0, MaxAirspeed);
 
       // Max lift is at max air speed * factor of gravity (factor should be >1 to counter gravity at max speed)
       float lift = (CurrentAirspeed / MaxAirspeed) * 5f * 9.81f; // So far lift is in "acceleration" unit
 
+      // Scale max lift with wing's lift constant calculated from wing's angle of attack.
       if (aoaWingDeg > -15 && aoaWingDeg < 15)
         lift = lift * aoaWingDeg / 10;
       else if (aoaWingDeg < -15)
@@ -86,8 +98,11 @@ namespace Wings.Blueprint.Aircraft
       else if (aoaWingDeg > 15)
         lift = lift / 10;
 
+      // Forward pull from engine. More throttle => more pull.
+      // More speed yields lesser pull as the propeller's effect reduces with forward speed.
       float forwardPull = (CurrentThrottle * (MaxAirspeed - restrictedAirspeed) / MaxAirspeed) * 10; // pull in "acceleration" unit
 
+      // Drag increases with speed.
       float drag = (restrictedAirspeed * restrictedAirspeed / (MaxAirspeed * MaxAirspeed)) * -10; // drag in "acceleration" unit
 
       var liftVector = new Vector3(
@@ -95,6 +110,7 @@ namespace Wings.Blueprint.Aircraft
           0,//lift * (MathF.Sin(AircraftBody.Rotation.X) * MathF.Cos(AircraftBody.Rotation.Z)),
           lift * MathF.Cos(AircraftBody.Rotation.X) * MathF.Cos(AircraftBody.Rotation.Y));
 
+      // Calculate X/Y/Z calculation based on all the values.
       AircraftPhysics.Acceleration =
        liftVector
         + AircraftBody.ForwardUnitVector * forwardPull
