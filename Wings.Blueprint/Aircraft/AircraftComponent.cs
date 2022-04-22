@@ -18,7 +18,7 @@ namespace Wings.Blueprint.Aircraft
 
     public float CurrentThrottle { get; set; }
 
-    // Current airspeed is "wind over wings" along fuselage
+    // Current airspeed is "wind over wings" along fuselage, not in direction of travel
     public float CurrentAirspeed { get; set; }
 
     public float CurrentAngleOfAttack { get; set; }
@@ -37,53 +37,19 @@ namespace Wings.Blueprint.Aircraft
     const int CenterZero = 10;
     const float MaxControlMovement = 100;
 
-    const float MaxPitch = Angles.QuarterCircle;
-
     const float MaxRollRate = Angles.FullCircle / 4;
     const float MaxPitchRate = Angles.FullCircle / 10;
 
     public void Update(GameEnvironment environment, TimeSpan elapsedTime)
     {
-      if (InitialMousePosition == null)
-        Mouse.SetPosition(750, 300);
+      UpdateControlStickState();
+      ReadKeyboardState();
+      ApplyAerodynamics();
+    }
 
-      MouseState mouseState = Mouse.GetState();
 
-      if (InitialMousePosition == null || mouseState.LeftButton == ButtonState.Pressed)
-      {
-        InitialMousePosition = new Vector2(mouseState.X, mouseState.Y);
-      }
-
-      Vector2 mouseTravel = new Vector2(mouseState.X, mouseState.Y) - InitialMousePosition.Value;
-
-      // Make it easier to center by ignoring the innermost CenterZero pixel movements.
-      mouseTravel = new Vector2(
-        -CenterZero < mouseTravel.X && mouseTravel.X < CenterZero ? 0 : (mouseTravel.X < 0 ? mouseTravel.X + CenterZero : mouseTravel.X - CenterZero),
-        -CenterZero < mouseTravel.Y && mouseTravel.Y < CenterZero ? 0 : (mouseTravel.Y < 0 ? mouseTravel.Y + CenterZero : mouseTravel.Y - CenterZero));
-
-      // Let max travel be MaxControlMovement pixels
-      mouseTravel = new Vector2(
-        MathHelper.Clamp(mouseTravel.X, -MaxControlMovement, MaxControlMovement),
-        MathHelper.Clamp(mouseTravel.Y, -MaxControlMovement, MaxControlMovement));
-
-      CurrentStickPosition = new Vector2(
-        mouseTravel.X / MaxControlMovement,
-        mouseTravel.Y / MaxControlMovement);
-
-      KeyboardState keyboard = Keyboard.GetState();
-
-      if (keyboard.IsKeyDown(Keys.A))
-        CurrentThrottle += 0.01f;
-      else if (keyboard.IsKeyDown(Keys.Z))
-        CurrentThrottle -= 0.01f;
-
-      float rudderYaw = 0f;
-      if (keyboard.IsKeyDown(Keys.Q))
-        rudderYaw = Angles.FullCircle / 10;
-      else if (keyboard.IsKeyDown(Keys.W))
-        rudderYaw = -Angles.FullCircle / 10;
-
-      CurrentThrottle = MathHelper.Clamp(CurrentThrottle, 0, 1);
+    private void ApplyAerodynamics()
+    {
       CurrentAirspeed = Vector3.Dot(AircraftBody.ForwardUnitVector, AircraftPhysics.Velocity);
       CurrentAngleOfAttack = Converters.AngleBetweenVectors(AircraftBody.ForwardUnitVector, AircraftPhysics.Velocity);
 
@@ -129,10 +95,59 @@ namespace Wings.Blueprint.Aircraft
           0,//lift * (MathF.Sin(AircraftBody.Rotation.X) * MathF.Cos(AircraftBody.Rotation.Z)),
           lift * MathF.Cos(AircraftBody.Rotation.X) * MathF.Cos(AircraftBody.Rotation.Y));
 
-      AircraftPhysics.Acceleration = 
+      AircraftPhysics.Acceleration =
        liftVector
-        + AircraftBody.ForwardUnitVector * forwardPull 
+        + AircraftBody.ForwardUnitVector * forwardPull
         + AircraftPhysics.VelocityUnitVector * drag;
+    }
+
+
+    private void UpdateControlStickState()
+    {
+      if (InitialMousePosition == null)
+        Mouse.SetPosition(750, 300);
+
+      MouseState mouseState = Mouse.GetState();
+
+      if (InitialMousePosition == null || mouseState.LeftButton == ButtonState.Pressed)
+      {
+        InitialMousePosition = new Vector2(mouseState.X, mouseState.Y);
+      }
+
+      Vector2 mouseTravel = new Vector2(mouseState.X, mouseState.Y) - InitialMousePosition.Value;
+
+      // Make it easier to center by ignoring the innermost CenterZero pixel movements.
+      mouseTravel = new Vector2(
+        -CenterZero < mouseTravel.X && mouseTravel.X < CenterZero ? 0 : (mouseTravel.X < 0 ? mouseTravel.X + CenterZero : mouseTravel.X - CenterZero),
+        -CenterZero < mouseTravel.Y && mouseTravel.Y < CenterZero ? 0 : (mouseTravel.Y < 0 ? mouseTravel.Y + CenterZero : mouseTravel.Y - CenterZero));
+
+      // Let max travel be MaxControlMovement pixels
+      mouseTravel = new Vector2(
+        MathHelper.Clamp(mouseTravel.X, -MaxControlMovement, MaxControlMovement),
+        MathHelper.Clamp(mouseTravel.Y, -MaxControlMovement, MaxControlMovement));
+
+      CurrentStickPosition = new Vector2(
+        mouseTravel.X / MaxControlMovement,
+        mouseTravel.Y / MaxControlMovement);
+    }
+
+
+    private void ReadKeyboardState()
+    {
+      KeyboardState keyboard = Keyboard.GetState();
+
+      if (keyboard.IsKeyDown(Keys.A))
+        CurrentThrottle += 0.01f;
+      else if (keyboard.IsKeyDown(Keys.Z))
+        CurrentThrottle -= 0.01f;
+
+      CurrentThrottle = MathHelper.Clamp(CurrentThrottle, 0, 1);
+
+      //float rudderYaw = 0f;
+      //if (keyboard.IsKeyDown(Keys.Q))
+      //  rudderYaw = Angles.FullCircle / 10;
+      //else if (keyboard.IsKeyDown(Keys.W))
+      //  rudderYaw = -Angles.FullCircle / 10;
     }
   }
 }
