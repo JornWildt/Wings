@@ -84,26 +84,40 @@ namespace Wings.Blueprint.Aircraft
         rudderYaw = -Angles.FullCircle / 10;
 
       CurrentThrottle = MathHelper.Clamp(CurrentThrottle, 0, 1);
+      CurrentAirspeed = Vector3.Dot(AircraftBody.ForwardUnitVector, AircraftPhysics.Velocity);
+      CurrentAngleOfAttack = Converters.AngleBetweenVectors(AircraftBody.ForwardUnitVector, AircraftPhysics.Velocity);
+
+      if (float.IsNaN(CurrentAirspeed) || float.IsNaN(CurrentAngleOfAttack))
+        throw new InvalidOperationException("CurrentAirSpeed or CurrentAngleOfAttack is NaN");
+
+      var crossProd = Vector3.Cross(AircraftBody.ForwardUnitVector, Vector3.Normalize(AircraftPhysics.Velocity));
+      var dot = Vector3.Dot(crossProd, new Vector3(0, 1, 0)); // FIXME: must depend on rotation
+      if (dot < 0)
+        CurrentAngleOfAttack = -CurrentAngleOfAttack;
+
+      float aoaWingDeg = MathHelper.ToDegrees(CurrentAngleOfAttack) + 4 /* wing incidence */;
+      float aoaElevatorDeg = MathHelper.ToDegrees(CurrentAngleOfAttack);
 
       AircraftPhysics.RotationalVelocity = new Vector3(
-        MaxRollRate * CurrentStickPosition.X,
+        0,//MaxRollRate * CurrentStickPosition.X,
         MaxPitchRate * CurrentStickPosition.Y * MathF.Cos(AircraftBody.Rotation.X),
-        MaxPitchRate * CurrentStickPosition.Y * MathF.Sin(AircraftBody.Rotation.X) + rudderYaw);
+        0);// MaxPitchRate * CurrentStickPosition.Y * MathF.Sin(AircraftBody.Rotation.X) + rudderYaw);
 
-      CurrentAirspeed = Vector3.Dot(AircraftBody.ForwardUnitVector, AircraftPhysics.Velocity);
-      CurrentAngleOfAttack = -Converters.AngleBetweenVectors(AircraftBody.ForwardUnitVector, AircraftPhysics.Velocity);
+      AircraftPhysics.RotationalVelocity = AircraftPhysics.RotationalVelocity + new Vector3(
+        0,
+        -(aoaElevatorDeg / 4.0f) * MaxPitchRate,
+        0);
 
       float restrictedAirspeed = MathHelper.Clamp(CurrentAirspeed, 0, MaxAirspeed);
 
       // Max lift is at max air speed * factor of gravity (factor should be >1 to counter gravity at max speed)
       float lift = (CurrentAirspeed / MaxAirspeed) * 5f * 9.81f; // So far lift is in "acceleration" unit
 
-      float aoaDeg = MathHelper.ToRadians(CurrentAngleOfAttack) + 4 /* wing incidence */;
-      if (aoaDeg > -15 && aoaDeg < 15)
-        lift = lift * aoaDeg / 10;
-      else if (aoaDeg < -15)
+      if (aoaWingDeg > -15 && aoaWingDeg < 15)
+        lift = lift * aoaWingDeg / 10;
+      else if (aoaWingDeg < -15)
         lift = lift / -10;
-      else if (aoaDeg > 15)
+      else if (aoaWingDeg > 15)
         lift = lift / 10;
 
       float forwardPull = (CurrentThrottle * (MaxAirspeed - restrictedAirspeed) / MaxAirspeed) * 10; // pull in "acceleration" unit
@@ -112,7 +126,7 @@ namespace Wings.Blueprint.Aircraft
 
       var liftVector = new Vector3(
           0, //lift * (-1f * MathF.Sin(AircraftBody.Rotation.Y) * MathF.Cos(AircraftBody.Rotation.X)),
-          lift * (MathF.Sin(AircraftBody.Rotation.X) * MathF.Cos(AircraftBody.Rotation.Z)),
+          0,//lift * (MathF.Sin(AircraftBody.Rotation.X) * MathF.Cos(AircraftBody.Rotation.Z)),
           lift * MathF.Cos(AircraftBody.Rotation.X) * MathF.Cos(AircraftBody.Rotation.Y));
 
       AircraftPhysics.Acceleration = 

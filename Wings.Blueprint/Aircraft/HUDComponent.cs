@@ -52,7 +52,7 @@ namespace Wings.Blueprint.Aircraft
       AirspeedLocation = new Vector2(50, 320);
       HeightLocation = new Vector2(50, 360);
       ThrottleLocation = new Vector2(50, 280);
-      CompassLocation = new Vector2(400, 420);
+      CompassLocation = new Vector2(700, 80);
     }
 
 

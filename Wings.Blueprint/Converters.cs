@@ -12,6 +12,7 @@ namespace Wings.Blueprint
         MathF.Sin(rotation.Z) * MathF.Cos(rotation.Y),
         MathF.Sin(rotation.Y));
 
-    public static float AngleBetweenVectors(Vector3 a, Vector3 b) => MathF.Acos(Vector3.Dot(Vector3.Normalize(a), Vector3.Normalize(b)));
+    // Round() since Dot() has been seen returning 1.0000002 even on two unit vectors.
+    public static float AngleBetweenVectors(Vector3 a, Vector3 b) => MathF.Acos(MathF.Round(Vector3.Dot(Vector3.Normalize(a), Vector3.Normalize(b)), 6));
   }
 }
