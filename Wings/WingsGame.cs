@@ -53,7 +53,7 @@ namespace Wings
     protected override void Draw(GameTime gameTime)
     {
       GraphicsDevice.Clear(Color.CornflowerBlue);
-      _spriteBatch.Begin();
+      _spriteBatch.Begin(SpriteSortMode.FrontToBack);
 
       foreach (var item in Environment.Entities.GetComponents<VisualComponent>())
       {

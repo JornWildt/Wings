@@ -14,12 +14,15 @@ namespace Wings.Blueprint
     {
       IEntityRepository entities = environment.DependencyContainer.Resolve<IEntityRepository>();
 
-      Entity aircraft = BuildAircraft();
+      Entity aircraft = BuildAircraft(out AircraftComponent aircraftComponent);
       entities.AddEntity(aircraft);
+
+      entities.AddEntity(BuildCloud(0, 45, aircraftComponent.AircraftBody));
+      //entities.AddEntity(BuildCloud(-25, 25, aircraftComponent.AircraftBody));
     }
 
 
-    private static Entity BuildAircraft()
+    private static Entity BuildAircraft(out AircraftComponent aircraft)
     {
       EntityId id = EntityId.NewId();
 
@@ -28,7 +31,7 @@ namespace Wings.Blueprint
         velocity: new Vector3(30, 0, 0), 
         acceleration: new Vector3(0, 0, 0), 
         rotationalVelocity: new Vector3(0,0,0));
-      var aircraft = new AircraftComponent(id, aircraftBody, aircraftPhysics);
+      aircraft = new AircraftComponent(id, aircraftBody, aircraftPhysics);
 
       return new Entity(
         id,
@@ -40,7 +43,19 @@ namespace Wings.Blueprint
           new HUDComponent(id, aircraft),
           aircraft
         });
+    }
 
+
+    private static Entity BuildCloud(float yaw, float pitch, BodyComponent centerBody)
+    {
+      EntityId id = EntityId.NewId();
+
+      return new Entity(
+        id,
+        new Component[]
+        {
+          new CloudComponent(id, yaw, pitch, centerBody)
+        });
     }
   }
 }
