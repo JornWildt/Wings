@@ -70,17 +70,23 @@ namespace Wings.Blueprint.Aircraft
 
       KeyboardState keyboard = Keyboard.GetState();
 
-      if (keyboard.IsKeyDown(Keys.Q))
+      if (keyboard.IsKeyDown(Keys.A))
         CurrentThrottle += 0.01f;
-      else if (keyboard.IsKeyDown(Keys.A))
+      else if (keyboard.IsKeyDown(Keys.Z))
         CurrentThrottle -= 0.01f;
+
+      float rudderYaw = 0f;
+      if (keyboard.IsKeyDown(Keys.Q))
+        rudderYaw = Angles.FullCircle / 10;
+      else if (keyboard.IsKeyDown(Keys.W))
+        rudderYaw = -Angles.FullCircle / 10;
 
       CurrentThrottle = MathHelper.Clamp(CurrentThrottle, 0, 1);
 
       AircraftPhysics.RotationalVelocity = new Vector3(
         MaxRollRate * CurrentStickPosition.X,
         MaxPitchRate * CurrentStickPosition.Y * MathF.Cos(AircraftBody.Rotation.X),
-        MaxPitchRate * CurrentStickPosition.Y * MathF.Sin(AircraftBody.Rotation.X));
+        MaxPitchRate * CurrentStickPosition.Y * MathF.Sin(AircraftBody.Rotation.X) + rudderYaw);
 
       CurrentAirspeed = Vector3.Dot(AircraftBody.ForwardUnitVector, AircraftPhysics.Velocity);
 
@@ -93,8 +99,8 @@ namespace Wings.Blueprint.Aircraft
       float drag = (restrictedAirspeed * restrictedAirspeed / (MaxAirspeed * MaxAirspeed)) * -10; // drag in "acceleration" unit
 
       var liftVector = new Vector3(
-          0,//lift * (float)Math.Cos(AircraftBody.Rotation.X) * (float)Math.Sin(AircraftBody.Rotation.Y),
-          0, //lift * (float)Math.Sin(AircraftBody.Rotation.X) * (float)Math.Cos(AircraftBody.Rotation.Z),
+          0, //lift * (-1f * MathF.Sin(AircraftBody.Rotation.Y) * MathF.Cos(AircraftBody.Rotation.X)),
+          lift * (MathF.Sin(AircraftBody.Rotation.X) * MathF.Cos(AircraftBody.Rotation.Z)),
           lift * MathF.Cos(AircraftBody.Rotation.X) * MathF.Cos(AircraftBody.Rotation.Y));
 
       AircraftPhysics.Acceleration = 

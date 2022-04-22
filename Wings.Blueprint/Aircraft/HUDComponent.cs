@@ -76,10 +76,10 @@ namespace Wings.Blueprint.Aircraft
 
     public void DrawControlStick(SpriteBatch spriteBatch)
     {
-      spriteBatch.Draw(ControlStickFaceTexture, ControlStickFaceLocation, null, Color.White, 0f, new Vector2(0, 0), ControlStickScale, SpriteEffects.None, 0);
+      spriteBatch.Draw(ControlStickFaceTexture, ControlStickFaceLocation, null, Color.White, 0f, new Vector2(0, 0), ControlStickScale, SpriteEffects.None, 0.9f);
 
       Vector2 stickPosition = ControlStickBallLocation + 100 * ControlStickScale.X * Aircraft.CurrentStickPosition;
-      spriteBatch.Draw(ControlStickBallTexture, stickPosition, null, Color.White, 0f, new Vector2(0,0), ControlStickScale, SpriteEffects.None, 0);
+      spriteBatch.Draw(ControlStickBallTexture, stickPosition, null, Color.White, 0f, new Vector2(0,0), ControlStickScale, SpriteEffects.None, 0.9f);
     }
 
 
@@ -94,35 +94,35 @@ namespace Wings.Blueprint.Aircraft
 
       var scale = new Vector2(1, 1);
 
-      spriteBatch.Draw(HorizonTexture, position, null, Color.White, rollAngle, origin, scale, SpriteEffects.None, 0);
+      spriteBatch.Draw(HorizonTexture, position, null, Color.White, rollAngle, origin, scale, SpriteEffects.None, 0.9f);
     }
 
 
     public void DrawVerticalSpeed(SpriteBatch spriteBatch)
     {
       string text = $"Vertical speed: {AircraftPhysics.Velocity.Z:N1} m/s";
-      spriteBatch.DrawString(DialFont, text, VerticalSpeedLocation, Color.Black);
+      spriteBatch.DrawString(DialFont, text, VerticalSpeedLocation, Color.Black, 0, Vector2.Zero, 1, SpriteEffects.None, 0.9f);
     }
 
 
     public void DrawAirspeed(SpriteBatch spriteBatch)
     {
       string text = $"Airspeed: {Converters.MetersSecondToKilometersHour(Aircraft.CurrentAirspeed):N1} km/h ({Converters.MetersSecondToKilometersHour(AircraftPhysics.Velocity.X):N1}/{Converters.MetersSecondToKilometersHour(AircraftPhysics.Velocity.Y):N1}/{Converters.MetersSecondToKilometersHour(AircraftPhysics.Velocity.Z):N1}). Vrot = ({AircraftPhysics.RotationalVelocity.X:N3} / {AircraftPhysics.RotationalVelocity.Y:N3} / {AircraftPhysics.RotationalVelocity.Z:N3})";
-      spriteBatch.DrawString(DialFont, text, AirspeedLocation, Color.Black);
+      spriteBatch.DrawString(DialFont, text, AirspeedLocation, Color.Black, 0, Vector2.Zero, 1, SpriteEffects.None, 0.9f);
     }
 
 
     public void DrawHeight(SpriteBatch spriteBatch)
     {
       string text = $"Height: {AircraftBody.Position.Z:N0} m. Rotation: ({AircraftBody.Rotation.X:N1} / {AircraftBody.Rotation.Y:N1} / {AircraftBody.Rotation.Z:N1}). ForwardVector: ({AircraftBody.ForwardUnitVector.X:N1} / {AircraftBody.ForwardUnitVector.Y:N1} / {AircraftBody.ForwardUnitVector.Z:N1})";
-      spriteBatch.DrawString(DialFont, text, HeightLocation, Color.Black);
+      spriteBatch.DrawString(DialFont, text, HeightLocation, Color.Black, 0, Vector2.Zero, 1, SpriteEffects.None, 0.9f);
     }
 
 
     public void DrawThrottle(SpriteBatch spriteBatch)
     {
       string text = $"Throttle: {Aircraft.CurrentThrottle*100:N0}%";
-      spriteBatch.DrawString(DialFont, text, ThrottleLocation, Color.Black);
+      spriteBatch.DrawString(DialFont, text, ThrottleLocation, Color.Black, 0, Vector2.Zero, 1, SpriteEffects.None, 0.9f);
     }
   }
 }
