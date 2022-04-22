@@ -20,6 +20,7 @@ namespace Wings.Blueprint.Aircraft
     private Texture2D HorizonTexture;
     private Texture2D ControlStickFaceTexture;
     private Texture2D ControlStickBallTexture;
+    private Texture2D CompassTexture;
 
     private Vector2 ControlStickLocation;
     private Vector2 ControlStickFaceLocation;
@@ -32,6 +33,7 @@ namespace Wings.Blueprint.Aircraft
     private Vector2 AirspeedLocation;
     private Vector2 HeightLocation;
     private Vector2 ThrottleLocation;
+    private Vector2 CompassLocation;
 
 
     public HUDComponent(EntityId id, AircraftComponent aircraft)
@@ -42,7 +44,7 @@ namespace Wings.Blueprint.Aircraft
       AircraftPhysics = aircraft.AircraftPhysics;
 
       ControlStickScale = new Vector2(0.25f, 0.25f);
-      ControlStickLocation = new Vector2(600, 300);
+      ControlStickLocation = new Vector2(750, 300);
       ControlStickFaceLocation = ControlStickLocation - new Vector2(100, 100) * ControlStickScale;
       ControlStickBallLocation = ControlStickLocation - new Vector2(20, 20) * ControlStickScale;
 
@@ -50,6 +52,7 @@ namespace Wings.Blueprint.Aircraft
       AirspeedLocation = new Vector2(50, 320);
       HeightLocation = new Vector2(50, 340);
       ThrottleLocation = new Vector2(50, 280);
+      CompassLocation = new Vector2(400, 420);
     }
 
 
@@ -58,6 +61,7 @@ namespace Wings.Blueprint.Aircraft
       HorizonTexture = content.Load<Texture2D>("Horizon");
       ControlStickBallTexture = content.Load<Texture2D>("DarkBall");
       ControlStickFaceTexture = content.Load<Texture2D>("ControlStickFace");
+      CompassTexture = content.Load<Texture2D>("Compass");
       DialFont = content.Load<SpriteFont>("HUD");
       base.LoadContent(content);
     }
@@ -71,6 +75,7 @@ namespace Wings.Blueprint.Aircraft
       DrawAirspeed(spriteBatch);
       DrawHeight(spriteBatch);
       DrawThrottle(spriteBatch);
+      DrawCompass(spriteBatch);
     }
 
 
@@ -123,6 +128,18 @@ namespace Wings.Blueprint.Aircraft
     {
       string text = $"Throttle: {Aircraft.CurrentThrottle*100:N0}%";
       spriteBatch.DrawString(DialFont, text, ThrottleLocation, Color.Black);
+    }
+
+
+    public void DrawCompass(SpriteBatch spriteBatch)
+    {
+      float yawAngle = AircraftBody.Rotation.Z;
+
+      var origin = new Vector2(100, 100);
+
+      var scale = new Vector2(0.5f, 0.5f);
+
+      spriteBatch.Draw(CompassTexture, CompassLocation, null, Color.White, yawAngle, origin, scale, SpriteEffects.None, 0);
     }
   }
 }

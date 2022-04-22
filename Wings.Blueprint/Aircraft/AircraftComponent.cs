@@ -43,7 +43,7 @@ namespace Wings.Blueprint.Aircraft
     public void Update(GameEnvironment environment, TimeSpan elapsedTime)
     {
       if (InitialMousePosition == null)
-        Mouse.SetPosition(600, 300);
+        Mouse.SetPosition(750, 300);
 
       MouseState mouseState = Mouse.GetState();
 
