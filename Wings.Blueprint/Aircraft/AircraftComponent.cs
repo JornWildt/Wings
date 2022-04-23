@@ -20,7 +20,7 @@ namespace Wings.Blueprint.Aircraft
 
     public float CurrentRudder { get; set; } /* -1 .. 1 */
 
-    public Vector3 RelativeAirspeed { get; set; }
+    //public Vector3 RelativeAirspeed_Absolute { get; set; }
     public Vector3 AngleOfAttack { get; set; }
 
     // Current airspeed is "wind over wings" along fuselage, not in direction of travel
@@ -69,15 +69,26 @@ namespace Wings.Blueprint.Aircraft
 
     private void ApplyAerodynamics()
     {
-      RelativeAirspeed = AircraftBody.ForwardUnitVector * AircraftPhysics.Velocity;
+      //RelativeAirspeed_Absolute = AircraftBody.ForwardUnitVector * AircraftPhysics.Velocity;
 
       Vector2 velocityDirection = Converters.UnitVectorToRotationRadians(AircraftPhysics.VelocityUnitVector);
 
       // [pitch,yaw]
-      Vector2 relativeWindDirection = AircraftBody.Direction - velocityDirection;
+      Vector2 relativeWindDirection_unrotated = AircraftBody.Direction - velocityDirection;
 
-      // FIXME: not correct, should be somehow rotated
-      // Rotation around X, Y and Z axes
+      // Rotate relative wind around roll axis (X).
+      float roll = AircraftBody.Rotation.X;
+      Vector2 relativeWindDirection = new Vector2(
+        MathF.Cos(roll) * relativeWindDirection_unrotated.X + MathF.Sin(roll) * relativeWindDirection_unrotated.Y,
+        MathF.Cos(roll) * relativeWindDirection_unrotated.Y + MathF.Sin(roll) * relativeWindDirection_unrotated.X);
+
+      float speed = AircraftPhysics.Velocity.Length();
+      Vector3 relativeWindspeed = new Vector3(
+        MathF.Cos(relativeWindDirection.X) * MathF.Cos(relativeWindDirection.Y) * speed,
+        -MathF.Cos(relativeWindDirection.X) * MathF.Sin(relativeWindDirection.Y) * speed,
+        MathF.Sin(relativeWindDirection.X) * speed);
+
+      // AoA given as rotation around X, Y and Z axes
       AngleOfAttack = new Vector3(
         0, 
         relativeWindDirection.X,
@@ -90,7 +101,7 @@ namespace Wings.Blueprint.Aircraft
 
       // Rotational velocity depends on stick position (relative to aircraft)
       AircraftPhysics.RotationalVelocity = new Vector3(
-        0,//-MaxRollRate * CurrentStickPosition.X,
+        MaxRollRate * CurrentStickPosition.X,
         MaxPitchRate * CurrentStickPosition.Y,
         MaxYawRate * CurrentRudder);
 
@@ -102,9 +113,9 @@ namespace Wings.Blueprint.Aircraft
 
       // Clamp airspeed to reduce calculation issues when falling too fast. This is only a stop gap solution.
       Vector3 restrictedAirspeed = new Vector3(
-        MathHelper.Clamp(RelativeAirspeed.X, 0, MaxAirspeed),
-        MathHelper.Clamp(RelativeAirspeed.Y, 0, MaxAirspeed),
-        MathHelper.Clamp(RelativeAirspeed.Z, 0, MaxAirspeed));
+        MathHelper.Clamp(relativeWindspeed.X, -MaxAirspeed, MaxAirspeed),
+        MathHelper.Clamp(relativeWindspeed.Y, -MaxAirspeed, MaxAirspeed),
+        MathHelper.Clamp(relativeWindspeed.Z, -MaxAirspeed, MaxAirspeed));
 
       // Max lift is at max air speed * factor of gravity (factor should be >1 to counter gravity at max speed)
       float lift = (restrictedAirspeed.X / MaxAirspeed) * 4f * 9.81f; // So far lift is in "acceleration" unit
@@ -125,7 +136,7 @@ namespace Wings.Blueprint.Aircraft
       // FIXME: Add different constants for all three dimensions
       Vector3 drag = new Vector3(
         (restrictedAirspeed.X * restrictedAirspeed.X / (MaxAirspeed * MaxAirspeed)) * -10,
-        (restrictedAirspeed.Y * restrictedAirspeed.Y / (MaxAirspeed * MaxAirspeed)) * -10,
+        (restrictedAirspeed.Y * restrictedAirspeed.Y / (MaxAirspeed * MaxAirspeed)) * -10 * (float)MathF.Sign(restrictedAirspeed.Y),
         (restrictedAirspeed.Z * restrictedAirspeed.Z / (MaxAirspeed * MaxAirspeed)) * -10);
 
       // Calculate X/Y/Z acceleration (relative to aircraft)
@@ -135,8 +146,17 @@ namespace Wings.Blueprint.Aircraft
 
       // At last, rotate the acceleration back into the absolute coordinate system
 
-      // - Rotate pitch
-      AircraftPhysics.Acceleration = RotatePitch(acceleration, AircraftBody.Rotation.Y);
+      Vector3 unrolledAcceleration = RotateRoll(acceleration, AircraftBody.Rotation.X);
+      AircraftPhysics.Acceleration = RotatePitch(unrolledAcceleration, AircraftBody.Rotation.Y);
+    }
+
+
+    private Vector3 RotateRoll(Vector3 v, float roll)
+    {
+      return new Vector3(
+        v.X,
+        MathF.Cos(roll) * v.Y - MathF.Sin(roll) * v.Z,
+        MathF.Sin(roll) * v.Y + MathF.Cos(roll) * v.Z);
     }
 
 

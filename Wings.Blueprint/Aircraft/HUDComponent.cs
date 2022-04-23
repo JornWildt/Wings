@@ -112,7 +112,7 @@ namespace Wings.Blueprint.Aircraft
 
     public void DrawAirspeed(SpriteBatch spriteBatch)
     {
-      string text = $"Air speed: {Converters.MetersSecondToKilometersHour(Aircraft.RelativeAirspeed.X):N1} km/h. AoA: {MathHelper.ToDegrees(Aircraft.AngleOfAttack.Y):N0}.";
+      string text = $"Air speed: {Converters.MetersSecondToKilometersHour(0):N1} km/h. AoA: {MathHelper.ToDegrees(Aircraft.AngleOfAttack.Y):N0}.";
       spriteBatch.DrawString(DialFont, text, AirspeedLocation, Color.Black, 0, Vector2.Zero, 1, SpriteEffects.None, 0.9f);
       
       text = $"Absolute speed: {Converters.MetersSecondToKilometersHour(Aircraft.AircraftPhysics.Velocity.Length()):N1} km/h ({Converters.MetersSecondToKilometersHour(AircraftPhysics.Velocity.X):N1}/{Converters.MetersSecondToKilometersHour(AircraftPhysics.Velocity.Y):N1}/{Converters.MetersSecondToKilometersHour(AircraftPhysics.Velocity.Z):N1}). Vrot = ({AircraftPhysics.RotationalVelocity.X:N3} / {AircraftPhysics.RotationalVelocity.Y:N3} / {AircraftPhysics.RotationalVelocity.Z:N3})";
