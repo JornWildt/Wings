@@ -7,16 +7,17 @@ namespace Wings.Blueprint
   {
     public static float MetersSecondToKilometersHour(float s) => s * 3.6f;
 
-    // Input X:roll, y: pitch, z: yaw. Roll is ignored.
+    // Input X:pitch, y:yaw
     public static Vector3 RotationRadiansToUnitVector(Vector2 rotation) => new Vector3(
-        MathF.Cos(rotation.X) * MathF.Cos(rotation.Y),
-        MathF.Sin(rotation.X) * MathF.Cos(rotation.Y),
-        MathF.Sin(rotation.Y));
+        MathF.Cos(rotation.Y) * MathF.Cos(rotation.X),
+        MathF.Sin(rotation.Y) * MathF.Cos(rotation.X),
+        MathF.Sin(rotation.X));
 
     
+    // Output x:pitch, y:yaw
     public static Vector2 UnitVectorToRotationRadians(Vector3 direction) => new Vector2(
-      MathF.Acos(MathF.Round(direction.X / (MathF.Cos(MathF.Asin(direction.Z))))),
-      MathF.Asin(direction.Z));
+      MathF.Asin(direction.Z),
+      MathF.Acos(MathF.Round(direction.X / (MathF.Cos(MathF.Asin(direction.Z))))));
 
 
     // Round() since Dot() has been seen returning 1.0000002 even on two unit vectors.
