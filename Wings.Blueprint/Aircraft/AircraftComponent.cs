@@ -14,14 +14,18 @@ namespace Wings.Blueprint.Aircraft
 
     private Vector2? InitialMousePosition { get; set; }
 
-    public Vector2 CurrentStickPosition { get; set; }
+    public Vector2 CurrentStickPosition { get; set; } /* -1 .. 1 */
 
-    public float CurrentThrottle { get; set; }
+    public float CurrentThrottle { get; set; } /* 0 .. 1 */
+
+    public float CurrentRudder { get; set; } /* -1 .. 1 */
+
+    public Vector3 RelativeAirspeed { get; set; }
+    public Vector3 AngleOfAttack { get; set; }
 
     // Current airspeed is "wind over wings" along fuselage, not in direction of travel
-    public float CurrentAirspeed { get; set; }
-
-    public float CurrentAngleOfAttack { get; set; }
+    public float CurrentAirspeed_1 { get; set; }
+    public float CurrentAngleOfAttack_1 { get; set; }
 
     private const float MaxAirspeed = 60f;
 
@@ -39,6 +43,8 @@ namespace Wings.Blueprint.Aircraft
 
     const float MaxRollRate = Angles.FullCircle / 4;
     const float MaxPitchRate = Angles.FullCircle / 10;
+    const float MaxYawRate = Angles.FullCircle / 10;
+
 
     public void Update(GameEnvironment environment, TimeSpan elapsedTime)
     {
@@ -48,33 +54,93 @@ namespace Wings.Blueprint.Aircraft
     }
 
 
+#if false
+      Vector3 velocityDirection = Converters.UnitVectorToRotationRadians(AircraftPhysics.VelocityUnitVector);
+      Vector3 relativeWindDirection = velocityDirection - AircraftBody.Rotation;
+      Vector3 relativeWindUnitVector = Converters.RotationRadiansToUnitVector(relativeWindDirection);
+
+      Vector3 relativeWindUnitVectorRotated = new Vector3(
+        relativeWindUnitVector.X,
+        MathF.Cos(AircraftBody.Rotation.X) * relativeWindUnitVector.Y - MathF.Sin(AircraftBody.Rotation.X) * relativeWindUnitVector.Z,
+        MathF.Sin(AircraftBody.Rotation.X) * relativeWindUnitVector.Y + MathF.Cos(AircraftBody.Rotation.X) * relativeWindUnitVector.Z);
+
+      CalculateRelativeAirspeedAndAngleOfAttack();
+#endif
+
     private void ApplyAerodynamics()
     {
-      // Current airspeed depends on angle between fuselage forward direction and actual directional velocity.
-      // - it could in principle be falling vertically with the plane level, yielding zero airspeed over the wing.
-      CurrentAirspeed = Vector3.Dot(AircraftBody.ForwardUnitVector, AircraftPhysics.Velocity);
+      RelativeAirspeed = AircraftBody.ForwardUnitVector * AircraftPhysics.Velocity;
 
-      // Angle of attack is the angle between the fuselage direction and the directional velocity.
-      // - This does although not handle side slipping, but then airspeed would be zero anyway.
-      CurrentAngleOfAttack = Converters.AngleBetweenVectors(AircraftBody.ForwardUnitVector, AircraftPhysics.Velocity);
+      Vector2 velocityDirection = Converters.UnitVectorToRotationRadians(AircraftPhysics.VelocityUnitVector);
+      Vector2 relativeWindDirection = AircraftBody.Direction - velocityDirection;
 
-      // Figure out which way the angle of attack is. This depends on the roll.
-      // Cross product yields vector normal to fuselage forward and directional velocity
-      var crossProd = Vector3.Cross(AircraftBody.ForwardUnitVector, Vector3.Normalize(AircraftPhysics.Velocity));
+      AngleOfAttack = new Vector3(
+        relativeWindDirection.X,
+        relativeWindDirection.Y,  // FIXME: not correct, should be somehow rotated
+        0);
 
-      // Dot with a normal along the aircrafts Y axis (yaw axis - a vector along the wing).
-      // The sign indicates direction of angle of attack
-      var dot = Vector3.Dot(crossProd, new Vector3(0, 1, 0)); // FIXME: must depend on rotation
-      if (dot < 0)
-        CurrentAngleOfAttack = -CurrentAngleOfAttack;
+      // Get angle of attack in degrees as it is easier to work with (since wing lift is normally given relative to AoA in degrees)
+      float aoaWingDeg = MathHelper.ToDegrees(AngleOfAttack.Y) + 4 /* wing incidence */;
+      float aoaHorzStabDeg = MathHelper.ToDegrees(AngleOfAttack.Y);
+      float aoaVertStabDeg = MathHelper.ToDegrees(AngleOfAttack.Z);
+
+      // Rotational velocity depends on stick position (relative to aircraft)
+      AircraftPhysics.RotationalVelocity = new Vector3(
+        0,//-MaxRollRate * CurrentStickPosition.X,
+        MaxPitchRate * CurrentStickPosition.Y,
+        MaxYawRate * CurrentRudder);
+
+      // Apply "weather wane" effect of vertical and horizontal stabilizers.
+      AircraftPhysics.RotationalVelocity = AircraftPhysics.RotationalVelocity + new Vector3(
+        0,
+        -(aoaHorzStabDeg / 10.0f) * MaxPitchRate,
+        -(aoaVertStabDeg / 10.0f) * MaxYawRate);
+
+      // Clamp airspeed to reduce calculation issues when falling too fast. This is only a stop gap solution.
+      Vector3 restrictedAirspeed = new Vector3(
+        MathHelper.Clamp(RelativeAirspeed.X, 0, MaxAirspeed),
+        MathHelper.Clamp(RelativeAirspeed.Y, 0, MaxAirspeed),
+        MathHelper.Clamp(RelativeAirspeed.Z, 0, MaxAirspeed));
+
+      // Max lift is at max air speed * factor of gravity (factor should be >1 to counter gravity at max speed)
+      float lift = (restrictedAirspeed.X / MaxAirspeed) * 4f * 9.81f; // So far lift is in "acceleration" unit
+
+      // Scale max lift with wing's lift constant calculated from wing's angle of attack.
+      if (aoaWingDeg > -15 && aoaWingDeg < 15)
+        lift = lift * aoaWingDeg / 10;
+      else if (aoaWingDeg < -15)
+        lift = lift / -10;
+      else if (aoaWingDeg > 15)
+        lift = lift / 10;
+
+      // Forward pull from engine. More throttle => more pull.
+      // More speed yields lesser pull as the propeller's effect reduces with forward speed.
+      float forwardPull = (CurrentThrottle * (MaxAirspeed - restrictedAirspeed.X) / MaxAirspeed) * 10; // pull in "acceleration" unit
+
+      // Drag increases with speed (in "acceleration" unit)
+      Vector3 drag = new Vector3(
+        (restrictedAirspeed.X * restrictedAirspeed.X / (MaxAirspeed * MaxAirspeed)) * -10,
+        (restrictedAirspeed.Y * restrictedAirspeed.Y / (MaxAirspeed * MaxAirspeed)) * -10,
+        (restrictedAirspeed.Z * restrictedAirspeed.Z / (MaxAirspeed * MaxAirspeed)) * -10);
+
+      // Calculate X/Y/Z acceleration (relative to aircraft)
+      AircraftPhysics.Acceleration =
+        new Vector3(forwardPull, 0, lift)
+        + drag;
+    }
+
+
+    private void ApplyAerodynamics_1()
+    {
+      CalculateRelativeAirspeedAndAngleOfAttack_1();
 
       // Get angle of attack in degrees as it is easier to work with (since wing lift is relative to AoA in degrees)
-      float aoaWingDeg = MathHelper.ToDegrees(CurrentAngleOfAttack) + 4 /* wing incidence */;
-      float aoaElevatorDeg = MathHelper.ToDegrees(CurrentAngleOfAttack);
+      float aoaWingDeg = MathHelper.ToDegrees(CurrentAngleOfAttack_1) + 4 /* wing incidence */;
+      float aoaElevatorDeg = MathHelper.ToDegrees(CurrentAngleOfAttack_1);
 
       // Rotational velocity depends on stick position
       AircraftPhysics.RotationalVelocity = new Vector3(
-        0,//MaxRollRate * CurrentStickPosition.X,
+        -MaxRollRate * CurrentStickPosition.X,
         MaxPitchRate * CurrentStickPosition.Y * MathF.Cos(AircraftBody.Rotation.X),
         0);// MaxPitchRate * CurrentStickPosition.Y * MathF.Sin(AircraftBody.Rotation.X) + rudderYaw);
 
@@ -85,10 +151,10 @@ namespace Wings.Blueprint.Aircraft
         0);
 
       // Clamp airspeed to reduce calculation issues when falling too fast. This is only a stop gap solution.
-      float restrictedAirspeed = MathHelper.Clamp(CurrentAirspeed, 0, MaxAirspeed);
+      float restrictedAirspeed = MathHelper.Clamp(CurrentAirspeed_1, 0, MaxAirspeed);
 
       // Max lift is at max air speed * factor of gravity (factor should be >1 to counter gravity at max speed)
-      float lift = (CurrentAirspeed / MaxAirspeed) * 5f * 9.81f; // So far lift is in "acceleration" unit
+      float lift = (CurrentAirspeed_1 / MaxAirspeed) * 5f * 9.81f; // So far lift is in "acceleration" unit
 
       // Scale max lift with wing's lift constant calculated from wing's angle of attack.
       if (aoaWingDeg > -15 && aoaWingDeg < 15)
@@ -115,6 +181,28 @@ namespace Wings.Blueprint.Aircraft
        liftVector
         + AircraftBody.ForwardUnitVector * forwardPull
         + AircraftPhysics.VelocityUnitVector * drag;
+    }
+
+
+    private void CalculateRelativeAirspeedAndAngleOfAttack_1()
+    {
+      // Current airspeed depends on angle between fuselage forward direction and actual directional velocity.
+      // - it could in principle be falling vertically with the plane level, yielding zero airspeed over the wing.
+      CurrentAirspeed_1 = Vector3.Dot(AircraftBody.ForwardUnitVector, AircraftPhysics.Velocity);
+
+      // Angle of attack is the angle between the fuselage direction and the directional velocity.
+      // - This does although not handle side slipping, but then airspeed would be zero anyway.
+      CurrentAngleOfAttack_1 = Converters.AngleBetweenVectors(AircraftBody.ForwardUnitVector, AircraftPhysics.Velocity);
+
+      // Figure out which way the angle of attack is. This depends on the roll.
+      // Cross product yields vector normal to fuselage forward and directional velocity
+      var crossProd = Vector3.Cross(AircraftBody.ForwardUnitVector, Vector3.Normalize(AircraftPhysics.Velocity));
+
+      // Dot with a normal along the aircrafts Y axis (yaw axis - a vector along the wing).
+      // The sign indicates direction of angle of attack
+      var dot = Vector3.Dot(crossProd, new Vector3(0, 1, 0));
+      if (dot < 0)
+        CurrentAngleOfAttack_1 = -CurrentAngleOfAttack_1;
     }
 
 
@@ -159,11 +247,12 @@ namespace Wings.Blueprint.Aircraft
 
       CurrentThrottle = MathHelper.Clamp(CurrentThrottle, 0, 1);
 
-      //float rudderYaw = 0f;
-      //if (keyboard.IsKeyDown(Keys.Q))
-      //  rudderYaw = Angles.FullCircle / 10;
-      //else if (keyboard.IsKeyDown(Keys.W))
-      //  rudderYaw = -Angles.FullCircle / 10;
+      if (keyboard.IsKeyDown(Keys.Q))
+        CurrentRudder = 1f;
+      else if (keyboard.IsKeyDown(Keys.W))
+        CurrentRudder = -1f;
+      else
+        CurrentRudder = 0f;
     }
   }
 }
