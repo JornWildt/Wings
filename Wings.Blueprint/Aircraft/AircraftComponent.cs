@@ -72,12 +72,16 @@ namespace Wings.Blueprint.Aircraft
       RelativeAirspeed = AircraftBody.ForwardUnitVector * AircraftPhysics.Velocity;
 
       Vector2 velocityDirection = Converters.UnitVectorToRotationRadians(AircraftPhysics.VelocityUnitVector);
+
+      // [pitch,yaw]
       Vector2 relativeWindDirection = AircraftBody.Direction - velocityDirection;
 
+      // FIXME: not correct, should be somehow rotated
+      // Rotation around X, Y and Z axes
       AngleOfAttack = new Vector3(
+        0, 
         relativeWindDirection.X,
-        relativeWindDirection.Y,  // FIXME: not correct, should be somehow rotated
-        0);
+        relativeWindDirection.Y);
 
       // Get angle of attack in degrees as it is easier to work with (since wing lift is normally given relative to AoA in degrees)
       float aoaWingDeg = MathHelper.ToDegrees(AngleOfAttack.Y) + 4 /* wing incidence */;
@@ -93,8 +97,8 @@ namespace Wings.Blueprint.Aircraft
       // Apply "weather wane" effect of vertical and horizontal stabilizers.
       AircraftPhysics.RotationalVelocity = AircraftPhysics.RotationalVelocity + new Vector3(
         0,
-        -(aoaHorzStabDeg / 10.0f) * MaxPitchRate,
-        -(aoaVertStabDeg / 10.0f) * MaxYawRate);
+        -(aoaHorzStabDeg / 30.0f) * MaxPitchRate,
+        -(aoaVertStabDeg / 30.0f) * MaxYawRate);
 
       // Clamp airspeed to reduce calculation issues when falling too fast. This is only a stop gap solution.
       Vector3 restrictedAirspeed = new Vector3(
@@ -107,7 +111,7 @@ namespace Wings.Blueprint.Aircraft
 
       // Scale max lift with wing's lift constant calculated from wing's angle of attack.
       if (aoaWingDeg > -15 && aoaWingDeg < 15)
-        lift = lift * aoaWingDeg / 10;
+        lift = lift * aoaWingDeg / 5;
       else if (aoaWingDeg < -15)
         lift = lift / -10;
       else if (aoaWingDeg > 15)
@@ -115,18 +119,33 @@ namespace Wings.Blueprint.Aircraft
 
       // Forward pull from engine. More throttle => more pull.
       // More speed yields lesser pull as the propeller's effect reduces with forward speed.
-      float forwardPull = (CurrentThrottle * (MaxAirspeed - restrictedAirspeed.X) / MaxAirspeed) * 10; // pull in "acceleration" unit
+      float forwardPull = (CurrentThrottle * (MaxAirspeed - restrictedAirspeed.X) / MaxAirspeed) * 20; // pull in "acceleration" unit
 
       // Drag increases with speed (in "acceleration" unit)
+      // FIXME: Add different constants for all three dimensions
       Vector3 drag = new Vector3(
         (restrictedAirspeed.X * restrictedAirspeed.X / (MaxAirspeed * MaxAirspeed)) * -10,
         (restrictedAirspeed.Y * restrictedAirspeed.Y / (MaxAirspeed * MaxAirspeed)) * -10,
         (restrictedAirspeed.Z * restrictedAirspeed.Z / (MaxAirspeed * MaxAirspeed)) * -10);
 
       // Calculate X/Y/Z acceleration (relative to aircraft)
-      AircraftPhysics.Acceleration =
+      Vector3 acceleration =
         new Vector3(forwardPull, 0, lift)
         + drag;
+
+      // At last, rotate the acceleration back into the absolute coordinate system
+
+      // - Rotate pitch
+      AircraftPhysics.Acceleration = RotatePitch(acceleration, AircraftBody.Rotation.Y);
+    }
+
+
+    private Vector3 RotatePitch(Vector3 v, float pitch)
+    {
+      return new Vector3(
+        MathF.Cos(pitch) * v.X - MathF.Sin(pitch) * v.Z,
+        v.Y,
+        MathF.Sin(pitch) * v.X + MathF.Cos(pitch) * v.Z);
     }
 
 

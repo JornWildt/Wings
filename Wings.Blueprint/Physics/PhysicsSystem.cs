@@ -25,7 +25,7 @@ namespace Wings.Blueprint.Physics
             MathHelper.WrapAngle(p.Item1.Rotation.Z)
           );
 
-        p.Item1.Direction = new Vector2(p.Item1.Rotation.Z, p.Item1.Rotation.Y);
+        p.Item1.Direction = new Vector2(p.Item1.Rotation.Y, p.Item1.Rotation.Z);
         p.Item1.ForwardUnitVector = Converters.RotationRadiansToUnitVector(p.Item1.Direction);
         p.Item2.VelocityUnitVector = p.Item2.Velocity.Length() > 0 ? Vector3.Normalize(p.Item2.Velocity) : new Vector3(0, 0, 0);
       }
