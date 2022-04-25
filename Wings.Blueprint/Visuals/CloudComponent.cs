@@ -35,8 +35,8 @@ namespace Wings.Blueprint.Visuals
       base.LoadContent(content);
     }
 
-    static readonly float ViewportFOVx = MathHelper.ToRadians(60);
-    static readonly float ViewportFOVy = MathHelper.ToRadians(30);
+    static readonly float ViewportFOVx = MathHelper.ToRadians(70);
+    static readonly float ViewportFOVy = MathHelper.ToRadians(50);
 
     public override void Draw(SpriteBatch spriteBatch)
     {

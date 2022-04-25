@@ -157,7 +157,7 @@ namespace Wings.Blueprint.Aircraft
 
       var origin = new Vector2(100, 35);
 
-      var scale = new Vector2(0.5f, 0.5f);
+      var scale = new Vector2(1f, 1f);
 
       spriteBatch.Draw(SilhouetteTexture, SilhouetteLocation, null, Color.White, rollAngle, origin, scale, SpriteEffects.None, 0);
     }

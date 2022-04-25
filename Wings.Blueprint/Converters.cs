@@ -13,11 +13,37 @@ namespace Wings.Blueprint
         MathF.Sin(rotation.Y) * MathF.Cos(rotation.X),
         MathF.Sin(rotation.X));
 
-    
+
     // Output x:pitch, y:yaw
-    public static Vector2 UnitVectorToRotationRadians(Vector3 direction) => new Vector2(
-      MathF.Atan(direction.Z / MathF.Sqrt(direction.X * direction.X + direction.Y * direction.Y)),
-      MathF.Atan(direction.Y / direction.X));
+    public static Vector2 UnitVectorToRotationRadians(Vector3 direction, float rotationForVertical)
+    {
+      if (direction.Z < 1)
+      {
+        if (direction.X > 0)
+        {
+          return new Vector2(
+              MathF.Atan(direction.Z / MathF.Sqrt(direction.X * direction.X + direction.Y * direction.Y)),
+              MathF.Atan(direction.Y / direction.X));
+        }
+        else if (direction.X < 0)
+        {
+          return new Vector2(
+              MathF.Atan(direction.Z / MathF.Sqrt(direction.X * direction.X + direction.Y * direction.Y)),
+              Angles.HalfCircle + MathF.Atan(direction.Y / direction.X));
+        }
+        else
+        {
+          return new Vector2(
+              MathF.Atan(direction.Z / MathF.Sqrt(direction.X * direction.X + direction.Y * direction.Y)),
+              Angles.QuarterCircle * MathF.Sign(direction.Y));
+        }
+      }
+      else
+      {
+        // Vertical vector
+        return new Vector2(Angles.QuarterCircle, rotationForVertical);
+      }
+    }
 
 
     // Round() since Dot() has been seen returning 1.0000002 even on two unit vectors.
