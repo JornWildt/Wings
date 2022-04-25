@@ -113,10 +113,10 @@ namespace Wings.Blueprint.Aircraft
         MaxYawRate * CurrentRudder);
 
       // Apply "weather wane" effect of vertical and horizontal stabilizers.
-      //AircraftPhysics.RotationalVelocity = AircraftPhysics.RotationalVelocity + new Vector3(
-      //  0,
-      //  -(aoaHorzStabDeg / 5.0f) * MaxPitchRate,
-      //  -(aoaVertStabDeg / 1.0f) * MaxYawRate);
+      AircraftPhysics.RotationalVelocity = AircraftPhysics.RotationalVelocity + new Vector3(
+        0,
+        -(aoaHorzStabDeg / 15.0f) * MaxPitchRate,
+        -(aoaVertStabDeg / 15.0f) * MaxYawRate);
 
       //if (MathF.Abs(MathHelper.ToDegrees(AircraftPhysics.RotationalVelocity.Z)) > 20)
       //  throw new InvalidOperationException();
@@ -128,7 +128,7 @@ namespace Wings.Blueprint.Aircraft
         MathHelper.Clamp(relativeWindspeed.Z, -MaxAirspeed, MaxAirspeed));
 
       // Max lift is at max air speed * factor of gravity (factor should be >1 to counter gravity at max speed)
-      float lift = (restrictedAirspeed.X / MaxAirspeed) * 1.5f * 9.81f; // So far lift is in "acceleration" unit
+      float lift = (restrictedAirspeed.X / MaxAirspeed) * 2f * 9.81f; // So far lift is in "acceleration" unit
 
       // Scale max lift with wing's lift constant calculated from wing's angle of attack.
       if (aoaWingDeg > -15 && aoaWingDeg < 15)
@@ -147,7 +147,7 @@ namespace Wings.Blueprint.Aircraft
       Vector3 drag = new Vector3(
         (restrictedAirspeed.X * restrictedAirspeed.X / (MaxAirspeed * MaxAirspeed)) * -10,
         (restrictedAirspeed.Y * restrictedAirspeed.Y / (MaxAirspeed * MaxAirspeed)) * -50 * MathF.Sign(restrictedAirspeed.Y),
-        (restrictedAirspeed.Z * restrictedAirspeed.Z / (MaxAirspeed * MaxAirspeed)) * -50);
+        (restrictedAirspeed.Z * restrictedAirspeed.Z / (MaxAirspeed * MaxAirspeed)) * -1);
 
       // Calculate X/Y/Z acceleration (relative to aircraft)
       Vector3 acceleration =
@@ -160,7 +160,7 @@ namespace Wings.Blueprint.Aircraft
       var unYawedAcc = RotateYaw(unRolledAcc, -AircraftBody.Rotation.Z);
       AircraftPhysics.Acceleration = RotatePitch(unYawedAcc, AircraftBody.Rotation.Y);
 
-      //var x = RotateRoll(AircraftPhysics.RotationalVelocity, AircraftBody.Rotation.X);
+      // Rotate rotational velocity around roll axis
       var y = new Vector3(
         AircraftPhysics.RotationalVelocity.X,
         MathF.Cos(AircraftBody.Rotation.X) * AircraftPhysics.RotationalVelocity.Y + MathF.Sin(AircraftBody.Rotation.X) * AircraftPhysics.RotationalVelocity.Z,

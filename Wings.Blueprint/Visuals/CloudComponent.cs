@@ -40,7 +40,7 @@ namespace Wings.Blueprint.Visuals
     public override void Draw(SpriteBatch spriteBatch)
     {
       var roll = CenterBody.Rotation.X;
-      var yawDiff = Yaw - CenterBody.Rotation.Z;
+      var yawDiff = CenterBody.Rotation.Z - Yaw;
       var pitchDiff = Pitch - CenterBody.Rotation.Y;
 
       var sizeX = spriteBatch.GraphicsDevice.Viewport.Width;
