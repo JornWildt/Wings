@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Elfisk.ECS.Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -29,6 +30,8 @@ namespace Wings.Blueprint.Aircraft
 
     private const float MaxAirspeed = 60f;
 
+    static TextWriter LogFile;
+
 
     public AircraftComponent(EntityId entityId, BodyComponent aircraftBody, PhysicsComponent aircraftPhysics)
       : base(entityId)
@@ -36,6 +39,8 @@ namespace Wings.Blueprint.Aircraft
       AircraftBody = aircraftBody;
       AircraftPhysics = aircraftPhysics;
       CurrentThrottle = 0.6f;
+
+      LogFile = new StreamWriter(new FileStream("C:\\tmp\\wings-log.txt", FileMode.Truncate));
     }
 
     const int CenterZero = 16;
@@ -77,6 +82,10 @@ namespace Wings.Blueprint.Aircraft
       Vector2 velocityDirection = Converters.UnitVectorToRotationRadians(AircraftPhysics.VelocityUnitVector, AircraftBody.Rotation.X);
 
       Vector2 relativeWindDirection_unrotated = AircraftBody.Direction - velocityDirection;
+      
+      relativeWindDirection_unrotated = new Vector2(
+        MathHelper.WrapAngle(relativeWindDirection_unrotated.X),
+        MathHelper.WrapAngle(relativeWindDirection_unrotated.Y));
 
       // Rotate relative wind around roll axis (X).
       float roll = AircraftBody.Rotation.X;
@@ -85,12 +94,12 @@ namespace Wings.Blueprint.Aircraft
         MathF.Cos(roll) * relativeWindDirection_unrotated.Y + MathF.Sin(roll) * relativeWindDirection_unrotated.X);
 
       float speed = AircraftPhysics.Velocity.Length();
-      Vector3 relativeWindspeed = new Vector3(
+      Vector3 relativeAirspeed = new Vector3(
         MathF.Cos(relativeWindDirection.X) * MathF.Cos(relativeWindDirection.Y) * speed,
         -MathF.Cos(relativeWindDirection.X) * MathF.Sin(relativeWindDirection.Y) * speed,
         MathF.Sin(relativeWindDirection.X) * speed);
 
-      RelativeAirspeed = relativeWindspeed;
+      RelativeAirspeed = relativeAirspeed;
 
       // AoA given as rotation around X, Y and Z axes
       AngleOfAttack = new Vector3(
@@ -115,10 +124,8 @@ namespace Wings.Blueprint.Aircraft
         -(aoaHorzStabDeg / 15.0f) * MaxPitchRate,
         -(aoaVertStabDeg / 15.0f) * MaxYawRate);
 
-      Vector3 restrictedAirspeed = relativeWindspeed;
-
       // Max lift is at max air speed * factor of gravity (factor should be >1 to counter gravity at max speed)
-      float lift = (restrictedAirspeed.X / MaxAirspeed) * 2f * 9.81f; // So far lift is in "acceleration" unit
+      float lift = (relativeAirspeed.X / MaxAirspeed) * 2f * 9.81f; // So far lift is in "acceleration" unit
 
       // Scale max lift with wing's lift constant calculated from wing's angle of attack.
       if (aoaWingDeg > -15 && aoaWingDeg < 15)
@@ -130,14 +137,14 @@ namespace Wings.Blueprint.Aircraft
 
       // Forward pull from engine. More throttle => more pull.
       // More speed yields lesser pull as the propeller's effect reduces with forward speed.
-      float forwardPull = (CurrentThrottle * (MaxAirspeed - restrictedAirspeed.X) / MaxAirspeed) * 20; // pull in "acceleration" unit
+      float forwardPull = (CurrentThrottle * (MaxAirspeed - relativeAirspeed.X) / MaxAirspeed) * 20; // pull in "acceleration" unit
 
       // Drag increases with speed (in "acceleration" unit)
       // FIXME: Add different constants for all three dimensions
       Vector3 drag = new Vector3(
-        (restrictedAirspeed.X * restrictedAirspeed.X / (MaxAirspeed * MaxAirspeed)) * -10,
-        (restrictedAirspeed.Y * restrictedAirspeed.Y / (MaxAirspeed * MaxAirspeed)) * -50 * MathF.Sign(restrictedAirspeed.Y),
-        (restrictedAirspeed.Z * restrictedAirspeed.Z / (MaxAirspeed * MaxAirspeed)) * -1);
+        (relativeAirspeed.X * relativeAirspeed.X / (MaxAirspeed * MaxAirspeed)) * -10,
+        (relativeAirspeed.Y * relativeAirspeed.Y / (MaxAirspeed * MaxAirspeed)) * -50 * MathF.Sign(relativeAirspeed.Y),
+        (relativeAirspeed.Z * relativeAirspeed.Z / (MaxAirspeed * MaxAirspeed)) * -50 * MathF.Sign(relativeAirspeed.Z));
 
       // Calculate X/Y/Z acceleration (relative to aircraft)
       Vector3 acceleration =
@@ -156,7 +163,24 @@ namespace Wings.Blueprint.Aircraft
         MathF.Cos(AircraftBody.Rotation.X) * AircraftPhysics.RotationalVelocity.Y + MathF.Sin(AircraftBody.Rotation.X) * AircraftPhysics.RotationalVelocity.Z,
         MathF.Cos(AircraftBody.Rotation.X) * AircraftPhysics.RotationalVelocity.Z + MathF.Sin(AircraftBody.Rotation.X) * AircraftPhysics.RotationalVelocity.Y);
 
+      var initialiRotationVelocity = AircraftPhysics.RotationalVelocity;
       AircraftPhysics.RotationalVelocity = unRolledRotation;
+
+      LogFile.WriteLine($@"{DateTime.Now}
+  Position                  : {AircraftBody.Position.X:###.##} / {AircraftBody.Position.Y:###.##} / {AircraftBody.Position.Z:###.##}
+  Roll / pitch / yaw        : {AircraftBody.Rotation.X:###.##} / {AircraftBody.Rotation.Y:###.##} / {AircraftBody.Rotation.Z:###.##}
+  Ground speed              : {AircraftPhysics.Velocity.X:###.##} / {AircraftPhysics.Velocity.Y:###.##} / {AircraftPhysics.Velocity.Z:###.##}
+  Ground speed dir (p/y)    : {velocityDirection.X:###.##} / {velocityDirection.Y:###.##}
+  Direction (p/y)           : {AircraftBody.Direction.X:###.##} / {AircraftBody.Direction.Y:###.##}
+  Relative speed (p/y)      : {relativeWindDirection.X:###.##} / {relativeWindDirection.Y:###.##}
+  Relative speed            : {relativeAirspeed.X:###.##} / {relativeAirspeed.Y:###.##} / {relativeAirspeed.Z:###.##}
+  Angle of attack           : {AngleOfAttack.X:###.##} / {AngleOfAttack.Y:###.##} / {AngleOfAttack.Z:###.##}
+  Drag                      : {drag.X:###.##} / {drag.Y:###.##} / {drag.Z:###.##}
+  Relative acceleration     : {acceleration.X:###.##} / {acceleration.Y:###.##} / {acceleration.Z:###.##}
+  Relative rotation velocity: {initialiRotationVelocity.X:###.##} / {initialiRotationVelocity.Y:###.##} / {initialiRotationVelocity.Z:###.##}
+  Absolute acceleration     : {AircraftPhysics.Acceleration.X:###.##} / {AircraftPhysics.Acceleration.Y:###.##} / {AircraftPhysics.Acceleration.Z:###.##}
+  Absolute rotation velocity: {unRolledRotation.X:###.##} / {unRolledRotation.Y:###.##} / {unRolledRotation.Z:###.##}
+");
     }
 
 
@@ -235,7 +259,7 @@ namespace Wings.Blueprint.Aircraft
       else
         CurrentRudder = 0f;
 
-      if (keyboard.IsKeyDown(Keys.Space))
+      if (keyboard.IsKeyDown(Keys.F1))
       {
         AircraftBody.Direction = Vector2.Zero;
         AircraftBody.ForwardUnitVector = new Vector3(1, 0, 0);
@@ -247,7 +271,7 @@ namespace Wings.Blueprint.Aircraft
         AircraftPhysics.VelocityUnitVector = new Vector3(1, 0, 0);
         Mouse.SetPosition(750, 300);
       }
-      else if (keyboard.IsKeyDown(Keys.F1))
+      else if (keyboard.IsKeyDown(Keys.F2))
       {
         AircraftBody.Position = Vector3.Zero;
         AircraftBody.Rotation = new Vector3(0, 0, Angles.QuarterCircle);
@@ -259,7 +283,7 @@ namespace Wings.Blueprint.Aircraft
         AircraftPhysics.VelocityUnitVector = new Vector3(0, 1, 0);
         Mouse.SetPosition(750, 300);
       }
-      else if (keyboard.IsKeyDown(Keys.F2))
+      else if (keyboard.IsKeyDown(Keys.F3))
       {
         AircraftBody.Position = Vector3.Zero;
         AircraftBody.Rotation = new Vector3(0, 0, -Angles.QuarterCircle);
@@ -270,6 +294,11 @@ namespace Wings.Blueprint.Aircraft
         AircraftPhysics.Velocity = new Vector3(0, -30, 0);
         AircraftPhysics.VelocityUnitVector = new Vector3(0, -1, 0);
         Mouse.SetPosition(750, 300);
+      }
+
+      if (keyboard.IsKeyDown(Keys.Space))
+      {
+        System.Diagnostics.Debugger.Break();
       }
     }
   }

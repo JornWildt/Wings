@@ -25,8 +25,8 @@ namespace Wings.Blueprint.Visuals
       : base(id)
     {
       TextureName = textureName;
-      Yaw = MathHelper.ToRadians(yawDeg);
-      Pitch = MathHelper.ToRadians(pitchDeg);
+      Yaw = MathHelper.WrapAngle(MathHelper.ToRadians(yawDeg));
+      Pitch = MathHelper.WrapAngle(MathHelper.ToRadians(pitchDeg));
       Scale = scale;
       CenterBody = centerBody;
     }
@@ -39,8 +39,8 @@ namespace Wings.Blueprint.Visuals
       base.LoadContent(content);
     }
 
-    static readonly float ViewportFOVx = MathHelper.ToRadians(70);
-    static readonly float ViewportFOVy = MathHelper.ToRadians(50);
+    static readonly float ViewportFOVx = MathHelper.ToRadians(45);
+    static readonly float ViewportFOVy = MathHelper.ToRadians(45);
 
     public override void Draw(SpriteBatch spriteBatch)
     {
@@ -51,16 +51,14 @@ namespace Wings.Blueprint.Visuals
       var sizeX = spriteBatch.GraphicsDevice.Viewport.Width;
       var sizeY = spriteBatch.GraphicsDevice.Viewport.Height;
 
+      var dx = (sizeX / 2) / MathF.Tan(ViewportFOVx);
+      var dy = (sizeY / 2) / MathF.Tan(ViewportFOVy);
+
       if (yawDiff > -ViewportFOVx && yawDiff < ViewportFOVx && pitchDiff> -ViewportFOVy && pitchDiff < ViewportFOVy)
       {
-        //yawDiff = yawDiff * Angles.QuarterCircle / ViewportFOVx;
-        //pitchDiff = pitchDiff * Angles.QuarterCircle / ViewportFOVy;
-
         Vector2 location = new Vector2(
-          (yawDiff / ViewportFOVx) * sizeX / 2,
-          (pitchDiff / ViewportFOVy) * sizeY / 2);
-
-        float dist = location.Length();
+          MathF.Tan(yawDiff) * dx,
+          MathF.Tan(pitchDiff) * dy);
 
         location = new Vector2(
           location.X * MathF.Cos(roll) - location.Y * MathF.Sin(roll),

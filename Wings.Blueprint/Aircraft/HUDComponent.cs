@@ -157,7 +157,7 @@ namespace Wings.Blueprint.Aircraft
 
       var origin = new Vector2(100, 35);
 
-      var scale = new Vector2(1f, 1f);
+      var scale = new Vector2(1f, 1 - Math.Abs(AircraftBody.Rotation.Y) / MathF.PI);
 
       spriteBatch.Draw(SilhouetteTexture, SilhouetteLocation, null, Color.White, rollAngle, origin, scale, SpriteEffects.None, 0.9f);
     }

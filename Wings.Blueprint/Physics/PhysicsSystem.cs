@@ -18,12 +18,23 @@ namespace Wings.Blueprint.Physics
         p.Item1.Position += p.Item2.Velocity * (float)elapsedTime.TotalSeconds;
         p.Item1.Rotation += p.Item2.RotationalVelocity * (float)elapsedTime.TotalSeconds;
 
-        p.Item1.Rotation = new Vector3
-          (
-            MathHelper.WrapAngle(p.Item1.Rotation.X),
-            MathHelper.WrapAngle(p.Item1.Rotation.Y),
-            MathHelper.WrapAngle(p.Item1.Rotation.Z)
-          );
+        p.Item1.Rotation.Deconstruct(out float roll, out float pitch, out float yaw);
+
+        if (pitch > Angles.QuarterCircle || pitch < -Angles.QuarterCircle)
+        {
+          pitch = Angles.HalfCircle - pitch;
+          roll = MathHelper.WrapAngle(roll + Angles.HalfCircle);
+          yaw = MathHelper.WrapAngle(yaw + Angles.HalfCircle);
+        }
+        else
+        {
+          roll = MathHelper.WrapAngle(roll);
+          pitch = MathHelper.WrapAngle(pitch);
+          yaw = MathHelper.WrapAngle(yaw);
+        }
+
+
+        p.Item1.Rotation = new Vector3(roll, pitch, yaw);
 
         p.Item1.Direction = new Vector2(p.Item1.Rotation.Y, p.Item1.Rotation.Z);
         p.Item1.ForwardUnitVector = Converters.RotationRadiansToUnitVector(p.Item1.Direction);
