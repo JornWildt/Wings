@@ -20,12 +20,12 @@ namespace Wings.Blueprint.Aircraft
 
     public float CurrentRudder { get; set; } /* -1 .. 1 */
 
-    //public Vector3 RelativeAirspeed_Absolute { get; set; }
+    public Vector3 RelativeAirspeed { get; set; }
     public Vector3 AngleOfAttack { get; set; }
 
     // Current airspeed is "wind over wings" along fuselage, not in direction of travel
-    public float CurrentAirspeed_1 { get; set; }
-    public float CurrentAngleOfAttack_1 { get; set; }
+    //public float CurrentAirspeed_1 { get; set; }
+    //public float CurrentAngleOfAttack_1 { get; set; }
 
     private const float MaxAirspeed = 60f;
 
@@ -38,12 +38,12 @@ namespace Wings.Blueprint.Aircraft
       CurrentThrottle = 0.6f;
     }
 
-    const int CenterZero = 10;
+    const int CenterZero = 16;
     const float MaxControlMovement = 100;
 
-    const float MaxRollRate = Angles.FullCircle / 4;
+    const float MaxRollRate = Angles.FullCircle / 10;
     const float MaxPitchRate = Angles.FullCircle / 10;
-    const float MaxYawRate = Angles.FullCircle / 10;
+    const float MaxYawRate = Angles.FullCircle / 20;
 
 
     public void Update(GameEnvironment environment, TimeSpan elapsedTime)
@@ -69,11 +69,16 @@ namespace Wings.Blueprint.Aircraft
 
     private void ApplyAerodynamics()
     {
-      //RelativeAirspeed_Absolute = AircraftBody.ForwardUnitVector * AircraftPhysics.Velocity;
-
-      Vector2 velocityDirection = Converters.UnitVectorToRotationRadians(AircraftPhysics.VelocityUnitVector);
+      CurrentStickPosition = new Vector2(0.5f, 0);
 
       // [pitch,yaw]
+      // If pointing straight up then use aircraft roll as yaw in 2D space
+      Vector2 velocityDirection = AircraftPhysics.VelocityUnitVector.Z < 1
+        ? Converters.UnitVectorToRotationRadians(AircraftPhysics.VelocityUnitVector)
+        : new Vector2(
+            MathF.PI/2,
+            AircraftBody.Rotation.X);
+
       Vector2 relativeWindDirection_unrotated = AircraftBody.Direction - velocityDirection;
 
       // Rotate relative wind around roll axis (X).
@@ -87,6 +92,8 @@ namespace Wings.Blueprint.Aircraft
         MathF.Cos(relativeWindDirection.X) * MathF.Cos(relativeWindDirection.Y) * speed,
         -MathF.Cos(relativeWindDirection.X) * MathF.Sin(relativeWindDirection.Y) * speed,
         MathF.Sin(relativeWindDirection.X) * speed);
+
+      RelativeAirspeed = relativeWindspeed;
 
       // AoA given as rotation around X, Y and Z axes
       AngleOfAttack = new Vector3(
@@ -106,10 +113,13 @@ namespace Wings.Blueprint.Aircraft
         MaxYawRate * CurrentRudder);
 
       // Apply "weather wane" effect of vertical and horizontal stabilizers.
-      AircraftPhysics.RotationalVelocity = AircraftPhysics.RotationalVelocity + new Vector3(
-        0,
-        -(aoaHorzStabDeg / 30.0f) * MaxPitchRate,
-        -(aoaVertStabDeg / 30.0f) * MaxYawRate);
+      //AircraftPhysics.RotationalVelocity = AircraftPhysics.RotationalVelocity + new Vector3(
+      //  0,
+      //  -(aoaHorzStabDeg / 5.0f) * MaxPitchRate,
+      //  -(aoaVertStabDeg / 1.0f) * MaxYawRate);
+
+      //if (MathF.Abs(MathHelper.ToDegrees(AircraftPhysics.RotationalVelocity.Z)) > 20)
+      //  throw new InvalidOperationException();
 
       // Clamp airspeed to reduce calculation issues when falling too fast. This is only a stop gap solution.
       Vector3 restrictedAirspeed = new Vector3(
@@ -118,15 +128,15 @@ namespace Wings.Blueprint.Aircraft
         MathHelper.Clamp(relativeWindspeed.Z, -MaxAirspeed, MaxAirspeed));
 
       // Max lift is at max air speed * factor of gravity (factor should be >1 to counter gravity at max speed)
-      float lift = (restrictedAirspeed.X / MaxAirspeed) * 4f * 9.81f; // So far lift is in "acceleration" unit
+      float lift = (restrictedAirspeed.X / MaxAirspeed) * 1.5f * 9.81f; // So far lift is in "acceleration" unit
 
       // Scale max lift with wing's lift constant calculated from wing's angle of attack.
       if (aoaWingDeg > -15 && aoaWingDeg < 15)
         lift = lift * aoaWingDeg / 5;
-      else if (aoaWingDeg < -15)
-        lift = lift / -10;
-      else if (aoaWingDeg > 15)
-        lift = lift / 10;
+      else if (aoaWingDeg > 0)
+        lift = lift * 3;
+      else
+        lift = lift * -3;
 
       // Forward pull from engine. More throttle => more pull.
       // More speed yields lesser pull as the propeller's effect reduces with forward speed.
@@ -146,8 +156,12 @@ namespace Wings.Blueprint.Aircraft
 
       // At last, rotate the acceleration back into the absolute coordinate system
 
-      Vector3 unrolledAcceleration = RotateRoll(acceleration, AircraftBody.Rotation.X);
-      AircraftPhysics.Acceleration = RotatePitch(unrolledAcceleration, AircraftBody.Rotation.Y);
+      var unRolledAcc = RotateRoll(acceleration, AircraftBody.Rotation.X);
+      var unYawedAcc = RotateYaw(unRolledAcc, AircraftBody.Rotation.Z);
+      AircraftPhysics.Acceleration = RotatePitch(unYawedAcc, AircraftBody.Rotation.Y);
+
+      var x = RotateRoll(AircraftPhysics.RotationalVelocity, AircraftBody.Rotation.X);
+      AircraftPhysics.RotationalVelocity = x;
     }
 
 
@@ -160,6 +174,15 @@ namespace Wings.Blueprint.Aircraft
     }
 
 
+    private Vector3 RotateYaw(Vector3 v, float yaw)
+    {
+      return new Vector3(
+        MathF.Cos(yaw) * v.X + MathF.Sin(yaw) * v.Y,
+        -MathF.Sin(yaw) * v.X + MathF.Cos(yaw) * v.Y,
+        v.Z);
+    }
+
+
     private Vector3 RotatePitch(Vector3 v, float pitch)
     {
       return new Vector3(
@@ -168,7 +191,7 @@ namespace Wings.Blueprint.Aircraft
         MathF.Sin(pitch) * v.X + MathF.Cos(pitch) * v.Z);
     }
 
-
+#if false
     private void ApplyAerodynamics_1()
     {
       CalculateRelativeAirspeedAndAngleOfAttack_1();
@@ -243,6 +266,7 @@ namespace Wings.Blueprint.Aircraft
       if (dot < 0)
         CurrentAngleOfAttack_1 = -CurrentAngleOfAttack_1;
     }
+#endif
 
 
     private void UpdateControlStickState()
