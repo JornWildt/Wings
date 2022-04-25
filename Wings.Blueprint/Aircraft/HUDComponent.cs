@@ -21,6 +21,7 @@ namespace Wings.Blueprint.Aircraft
     private Texture2D ControlStickFaceTexture;
     private Texture2D ControlStickBallTexture;
     private Texture2D CompassTexture;
+    private Texture2D SilhouetteTexture;
 
     private Vector2 ControlStickLocation;
     private Vector2 ControlStickFaceLocation;
@@ -34,6 +35,7 @@ namespace Wings.Blueprint.Aircraft
     private Vector2 HeightLocation;
     private Vector2 ThrottleLocation;
     private Vector2 CompassLocation;
+    private Vector2 SilhouetteLocation;
 
 
     public HUDComponent(EntityId id, AircraftComponent aircraft)
@@ -53,6 +55,7 @@ namespace Wings.Blueprint.Aircraft
       HeightLocation = new Vector2(50, 360);
       ThrottleLocation = new Vector2(50, 280);
       CompassLocation = new Vector2(700, 80);
+      SilhouetteLocation = new Vector2(50, 80);
     }
 
 
@@ -62,6 +65,7 @@ namespace Wings.Blueprint.Aircraft
       ControlStickBallTexture = content.Load<Texture2D>("DarkBall");
       ControlStickFaceTexture = content.Load<Texture2D>("ControlStickFace");
       CompassTexture = content.Load<Texture2D>("Compass");
+      SilhouetteTexture = content.Load<Texture2D>("Rear-silhouette");
       DialFont = content.Load<SpriteFont>("HUD");
       base.LoadContent(content);
     }
@@ -76,6 +80,7 @@ namespace Wings.Blueprint.Aircraft
       DrawHeight(spriteBatch);
       DrawThrottle(spriteBatch);
       DrawCompass(spriteBatch);
+      DrawSilhuette(spriteBatch);
     }
 
 
@@ -143,6 +148,18 @@ namespace Wings.Blueprint.Aircraft
       var scale = new Vector2(0.5f, 0.5f);
 
       spriteBatch.Draw(CompassTexture, CompassLocation, null, Color.White, yawAngle, origin, scale, SpriteEffects.None, 0);
+    }
+
+
+    public void DrawSilhuette(SpriteBatch spriteBatch)
+    {
+      float rollAngle = AircraftBody.Rotation.X;
+
+      var origin = new Vector2(100, 35);
+
+      var scale = new Vector2(0.5f, 0.5f);
+
+      spriteBatch.Draw(SilhouetteTexture, SilhouetteLocation, null, Color.White, rollAngle, origin, scale, SpriteEffects.None, 0);
     }
   }
 }

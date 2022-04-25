@@ -69,7 +69,8 @@ namespace Wings.Blueprint.Aircraft
 
     private void ApplyAerodynamics()
     {
-      //CurrentStickPosition = new Vector2(0, 0.5f);
+      //CurrentStickPosition = new Vector2(0f, 0f);
+      //CurrentRudder = -1f;
 
       // [pitch,yaw]
       // If pointing straight up then use aircraft roll as yaw in 2D space
