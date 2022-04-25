@@ -16,8 +16,8 @@ namespace Wings.Blueprint
     
     // Output x:pitch, y:yaw
     public static Vector2 UnitVectorToRotationRadians(Vector3 direction) => new Vector2(
-      MathF.Asin(direction.Z),
-      MathF.Acos(MathF.Round(direction.X / (MathF.Cos(MathF.Asin(direction.Z))))));
+      MathF.Atan(direction.Z / MathF.Sqrt(direction.X * direction.X + direction.Y * direction.Y)),
+      MathF.Atan(direction.Y / direction.X));
 
 
     // Round() since Dot() has been seen returning 1.0000002 even on two unit vectors.

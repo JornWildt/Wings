@@ -146,8 +146,8 @@ namespace Wings.Blueprint.Aircraft
       // FIXME: Add different constants for all three dimensions
       Vector3 drag = new Vector3(
         (restrictedAirspeed.X * restrictedAirspeed.X / (MaxAirspeed * MaxAirspeed)) * -10,
-        (restrictedAirspeed.Y * restrictedAirspeed.Y / (MaxAirspeed * MaxAirspeed)) * -10 * (float)MathF.Sign(restrictedAirspeed.Y),
-        (restrictedAirspeed.Z * restrictedAirspeed.Z / (MaxAirspeed * MaxAirspeed)) * -10);
+        (restrictedAirspeed.Y * restrictedAirspeed.Y / (MaxAirspeed * MaxAirspeed)) * -50 * MathF.Sign(restrictedAirspeed.Y),
+        (restrictedAirspeed.Z * restrictedAirspeed.Z / (MaxAirspeed * MaxAirspeed)) * -50);
 
       // Calculate X/Y/Z acceleration (relative to aircraft)
       Vector3 acceleration =
@@ -157,7 +157,7 @@ namespace Wings.Blueprint.Aircraft
       // At last, rotate the acceleration back into the absolute coordinate system
 
       var unRolledAcc = RotateRoll(acceleration, AircraftBody.Rotation.X);
-      var unYawedAcc = RotateYaw(unRolledAcc, AircraftBody.Rotation.Z);
+      var unYawedAcc = RotateYaw(unRolledAcc, -AircraftBody.Rotation.Z);
       AircraftPhysics.Acceleration = RotatePitch(unYawedAcc, AircraftBody.Rotation.Y);
 
       //var x = RotateRoll(AircraftPhysics.RotationalVelocity, AircraftBody.Rotation.X);
