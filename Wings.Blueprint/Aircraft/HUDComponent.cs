@@ -147,7 +147,7 @@ namespace Wings.Blueprint.Aircraft
 
       var scale = new Vector2(0.5f, 0.5f);
 
-      spriteBatch.Draw(CompassTexture, CompassLocation, null, Color.White, yawAngle, origin, scale, SpriteEffects.None, 0);
+      spriteBatch.Draw(CompassTexture, CompassLocation, null, Color.White, yawAngle, origin, scale, SpriteEffects.None, 0.9f);
     }
 
 
@@ -159,7 +159,7 @@ namespace Wings.Blueprint.Aircraft
 
       var scale = new Vector2(1f, 1f);
 
-      spriteBatch.Draw(SilhouetteTexture, SilhouetteLocation, null, Color.White, rollAngle, origin, scale, SpriteEffects.None, 0);
+      spriteBatch.Draw(SilhouetteTexture, SilhouetteLocation, null, Color.White, rollAngle, origin, scale, SpriteEffects.None, 0.9f);
     }
   }
 }

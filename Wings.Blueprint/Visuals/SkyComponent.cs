@@ -9,29 +9,33 @@ using Wings.Blueprint.Physics;
 
 namespace Wings.Blueprint.Visuals
 {
-  public class CloudComponent : VisualComponent, IDerivedComponent
+  public class SkyComponent : VisualComponent, IDerivedComponent
   {
+    string TextureName;
     float Yaw;
     float Pitch;
+    float Scale;
     BodyComponent CenterBody;
 
-    private Texture2D CloudTexture;
-    private Vector2 CloudCenter;
+    private Texture2D ItemTexture;
+    private Vector2 ItemCenter;
 
 
-    public CloudComponent(EntityId id, float yawDeg, float pitchDeg, BodyComponent centerBody)
+    public SkyComponent(EntityId id, string textureName, float yawDeg, float pitchDeg, float scale, BodyComponent centerBody)
       : base(id)
     {
+      TextureName = textureName;
       Yaw = MathHelper.ToRadians(yawDeg);
       Pitch = MathHelper.ToRadians(pitchDeg);
+      Scale = scale;
       CenterBody = centerBody;
     }
 
 
     public override void LoadContent(ContentManager content)
     {
-      CloudTexture = content.Load<Texture2D>("Cloud1");
-      CloudCenter = new Vector2(CloudTexture.Width / 2, CloudTexture.Height / 2);
+      ItemTexture = content.Load<Texture2D>(TextureName);
+      ItemCenter = new Vector2(ItemTexture.Width / 2, ItemTexture.Height / 2);
       base.LoadContent(content);
     }
 
@@ -42,7 +46,7 @@ namespace Wings.Blueprint.Visuals
     {
       var roll = -CenterBody.Rotation.X;
       var yawDiff = CenterBody.Rotation.Z - Yaw;
-      var pitchDiff = Pitch - CenterBody.Rotation.Y;
+      var pitchDiff = CenterBody.Rotation.Y - Pitch;
 
       var sizeX = spriteBatch.GraphicsDevice.Viewport.Width;
       var sizeY = spriteBatch.GraphicsDevice.Viewport.Height;
@@ -52,19 +56,21 @@ namespace Wings.Blueprint.Visuals
         //yawDiff = yawDiff * Angles.QuarterCircle / ViewportFOVx;
         //pitchDiff = pitchDiff * Angles.QuarterCircle / ViewportFOVy;
 
-        Vector2 cloudLocation = new Vector2(
-          MathF.Sin(yawDiff) * sizeX / 2,
-          MathF.Sin(pitchDiff) * sizeY / 2);
+        Vector2 location = new Vector2(
+          (yawDiff / ViewportFOVx) * sizeX / 2,
+          (pitchDiff / ViewportFOVy) * sizeY / 2);
 
-        cloudLocation = new Vector2(
-          cloudLocation.X * MathF.Cos(roll) - cloudLocation.Y * MathF.Sin(roll),
-          cloudLocation.X * MathF.Sin(roll) - cloudLocation.Y * MathF.Cos(roll));
+        float dist = location.Length();
 
-        cloudLocation = new Vector2(
-          sizeX / 2 + cloudLocation.X * 1.5f,
-          sizeY / 2 + cloudLocation.Y * 1.5f);
+        location = new Vector2(
+          location.X * MathF.Cos(roll) - location.Y * MathF.Sin(roll),
+          location.X * MathF.Sin(roll) + location.Y * MathF.Cos(roll));
 
-        spriteBatch.Draw(CloudTexture, cloudLocation, null, Color.White, roll, CloudCenter, new Vector2(1,1), SpriteEffects.None, 0f);
+        location = new Vector2(
+          sizeX / 2 + location.X,
+          sizeY / 2 + location.Y);
+
+        spriteBatch.Draw(ItemTexture, location, null, Color.White, roll, ItemCenter, new Vector2(Scale,Scale), SpriteEffects.None, 0f);
       }
     }
   }

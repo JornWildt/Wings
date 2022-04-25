@@ -41,7 +41,7 @@ namespace Wings.Blueprint.Aircraft
     const int CenterZero = 16;
     const float MaxControlMovement = 100;
 
-    const float MaxRollRate = Angles.FullCircle / 10;
+    const float MaxRollRate = Angles.FullCircle / 20;
     const float MaxPitchRate = Angles.FullCircle / 10;
     const float MaxYawRate = Angles.FullCircle / 20;
 

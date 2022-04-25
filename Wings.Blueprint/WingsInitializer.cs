@@ -17,8 +17,18 @@ namespace Wings.Blueprint
       Entity aircraft = BuildAircraft(out AircraftComponent aircraftComponent);
       entities.AddEntity(aircraft);
 
-      entities.AddEntity(BuildCloud(20, 0, aircraftComponent.AircraftBody));
-      entities.AddEntity(BuildCloud(-20, 0, aircraftComponent.AircraftBody));
+      entities.AddEntity(BuildSkyItem("Cloud1", 20, 10, 0.5f, aircraftComponent.AircraftBody));
+      entities.AddEntity(BuildSkyItem("Cloud1", -20, 40, 0.75f, aircraftComponent.AircraftBody));
+      entities.AddEntity(BuildSkyItem("Sun", 50, 45, 1f, aircraftComponent.AircraftBody));
+      
+      entities.AddEntity(BuildSkyItem("GreenDot", 0, 0, 1f, aircraftComponent.AircraftBody));
+      entities.AddEntity(BuildSkyItem("GreenDot", 45, 0, 1f, aircraftComponent.AircraftBody));
+      entities.AddEntity(BuildSkyItem("GreenDot", 90, 0, 1f, aircraftComponent.AircraftBody));
+      entities.AddEntity(BuildSkyItem("GreenDot", 135, 0, 1f, aircraftComponent.AircraftBody));
+      entities.AddEntity(BuildSkyItem("GreenDot", 180, 0, 1f, aircraftComponent.AircraftBody));
+      entities.AddEntity(BuildSkyItem("GreenDot", 225, 0, 1f, aircraftComponent.AircraftBody));
+      entities.AddEntity(BuildSkyItem("GreenDot", 270, 0, 1f, aircraftComponent.AircraftBody));
+      entities.AddEntity(BuildSkyItem("GreenDot", 315, 0, 1f, aircraftComponent.AircraftBody));
     }
 
 
@@ -49,7 +59,7 @@ namespace Wings.Blueprint
     }
 
 
-    private static Entity BuildCloud(float yaw, float pitch, BodyComponent centerBody)
+    private static Entity BuildSkyItem(string texture, float yaw, float pitch, float scale, BodyComponent centerBody)
     {
       EntityId id = EntityId.NewId();
 
@@ -57,7 +67,7 @@ namespace Wings.Blueprint
         id,
         new Component[]
         {
-          new CloudComponent(id, yaw, pitch, centerBody)
+          new SkyComponent(id, texture, yaw, pitch, scale, centerBody)
         });
     }
   }
