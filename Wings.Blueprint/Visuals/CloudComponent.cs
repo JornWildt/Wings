@@ -35,19 +35,23 @@ namespace Wings.Blueprint.Visuals
       base.LoadContent(content);
     }
 
-    static readonly float ViewportFOV = MathHelper.ToRadians(60);
+    static readonly float ViewportFOVx = MathHelper.ToRadians(60);
+    static readonly float ViewportFOVy = MathHelper.ToRadians(30);
 
     public override void Draw(SpriteBatch spriteBatch)
     {
-      var roll = CenterBody.Rotation.X;
+      var roll = -CenterBody.Rotation.X;
       var yawDiff = CenterBody.Rotation.Z - Yaw;
       var pitchDiff = Pitch - CenterBody.Rotation.Y;
 
       var sizeX = spriteBatch.GraphicsDevice.Viewport.Width;
       var sizeY = spriteBatch.GraphicsDevice.Viewport.Height;
 
-      if (yawDiff > -ViewportFOV && yawDiff < ViewportFOV && pitchDiff> -ViewportFOV && pitchDiff < ViewportFOV)
+      if (yawDiff > -ViewportFOVx && yawDiff < ViewportFOVx && pitchDiff> -ViewportFOVy && pitchDiff < ViewportFOVy)
       {
+        //yawDiff = yawDiff * Angles.QuarterCircle / ViewportFOVx;
+        //pitchDiff = pitchDiff * Angles.QuarterCircle / ViewportFOVy;
+
         Vector2 cloudLocation = new Vector2(
           MathF.Sin(yawDiff) * sizeX / 2,
           MathF.Sin(pitchDiff) * sizeY / 2);
@@ -57,10 +61,10 @@ namespace Wings.Blueprint.Visuals
           cloudLocation.X * MathF.Sin(roll) - cloudLocation.Y * MathF.Cos(roll));
 
         cloudLocation = new Vector2(
-          sizeX / 2 + cloudLocation.X,
-          sizeY / 2 + cloudLocation.Y);
+          sizeX / 2 + cloudLocation.X * 1.5f,
+          sizeY / 2 + cloudLocation.Y * 1.5f);
 
-        spriteBatch.Draw(CloudTexture, cloudLocation, null, Color.White, -roll, CloudCenter, new Vector2(1,1), SpriteEffects.None, 0f);
+        spriteBatch.Draw(CloudTexture, cloudLocation, null, Color.White, roll, CloudCenter, new Vector2(1,1), SpriteEffects.None, 0f);
       }
     }
   }

@@ -17,8 +17,8 @@ namespace Wings.Blueprint
       Entity aircraft = BuildAircraft(out AircraftComponent aircraftComponent);
       entities.AddEntity(aircraft);
 
-      entities.AddEntity(BuildCloud(0, 45, aircraftComponent.AircraftBody));
-      //entities.AddEntity(BuildCloud(-25, 25, aircraftComponent.AircraftBody));
+      entities.AddEntity(BuildCloud(20, 0, aircraftComponent.AircraftBody));
+      entities.AddEntity(BuildCloud(-20, 0, aircraftComponent.AircraftBody));
     }
 
 

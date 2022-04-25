@@ -119,14 +119,7 @@ namespace Wings.Blueprint.Aircraft
         -(aoaHorzStabDeg / 15.0f) * MaxPitchRate,
         -(aoaVertStabDeg / 15.0f) * MaxYawRate);
 
-      //if (MathF.Abs(MathHelper.ToDegrees(AircraftPhysics.RotationalVelocity.Z)) > 20)
-      //  throw new InvalidOperationException();
-
-      // Clamp airspeed to reduce calculation issues when falling too fast. This is only a stop gap solution.
-      Vector3 restrictedAirspeed = new Vector3(
-        MathHelper.Clamp(relativeWindspeed.X, -MaxAirspeed, MaxAirspeed),
-        MathHelper.Clamp(relativeWindspeed.Y, -MaxAirspeed, MaxAirspeed),
-        MathHelper.Clamp(relativeWindspeed.Z, -MaxAirspeed, MaxAirspeed));
+      Vector3 restrictedAirspeed = relativeWindspeed;
 
       // Max lift is at max air speed * factor of gravity (factor should be >1 to counter gravity at max speed)
       float lift = (restrictedAirspeed.X / MaxAirspeed) * 2f * 9.81f; // So far lift is in "acceleration" unit
@@ -155,19 +148,19 @@ namespace Wings.Blueprint.Aircraft
         new Vector3(forwardPull, 0, lift)
         + drag;
 
-      // At last, rotate the acceleration back into the absolute coordinate system
+      // At last, rotate the forces back into the absolute coordinate system
 
       var unRolledAcc = RotateRoll(acceleration, AircraftBody.Rotation.X);
       var unYawedAcc = RotateYaw(unRolledAcc, -AircraftBody.Rotation.Z);
       AircraftPhysics.Acceleration = RotatePitch(unYawedAcc, AircraftBody.Rotation.Y);
 
       // Rotate rotational velocity around roll axis
-      var y = new Vector3(
+      var unRolledRotation = new Vector3(
         AircraftPhysics.RotationalVelocity.X,
         MathF.Cos(AircraftBody.Rotation.X) * AircraftPhysics.RotationalVelocity.Y + MathF.Sin(AircraftBody.Rotation.X) * AircraftPhysics.RotationalVelocity.Z,
         MathF.Cos(AircraftBody.Rotation.X) * AircraftPhysics.RotationalVelocity.Z + MathF.Sin(AircraftBody.Rotation.X) * AircraftPhysics.RotationalVelocity.Y);
 
-      AircraftPhysics.RotationalVelocity = y;
+      AircraftPhysics.RotationalVelocity = unRolledRotation;
     }
 
 
@@ -322,6 +315,19 @@ namespace Wings.Blueprint.Aircraft
         CurrentRudder = -1f;
       else
         CurrentRudder = 0f;
+
+      if (keyboard.IsKeyDown(Keys.Space))
+      {
+        AircraftBody.Direction = Vector2.Zero;
+        AircraftBody.ForwardUnitVector = new Vector3(1, 0, 0);
+        AircraftBody.Position = Vector3.Zero;
+        AircraftBody.Rotation = Vector3.Zero;
+        AircraftPhysics.Acceleration = Vector3.Zero;
+        AircraftPhysics.RotationalVelocity = Vector3.Zero;
+        AircraftPhysics.Velocity = new Vector3(30, 0, 0);
+        AircraftPhysics.VelocityUnitVector = new Vector3(1, 0, 0);
+        Mouse.SetPosition(750, 300);
+      }
     }
   }
 }
