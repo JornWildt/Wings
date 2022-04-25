@@ -110,10 +110,10 @@ namespace Wings.Blueprint.Aircraft
         MaxYawRate * CurrentRudder);
 
       // Apply "weather wane" effect of vertical and horizontal stabilizers.
-      //AircraftPhysics.RotationalVelocity = AircraftPhysics.RotationalVelocity + new Vector3(
-      //  0,
-      //  -(aoaHorzStabDeg / 15.0f) * MaxPitchRate,
-      //  -(aoaVertStabDeg / 15.0f) * MaxYawRate);
+      AircraftPhysics.RotationalVelocity = AircraftPhysics.RotationalVelocity + new Vector3(
+        0,
+        -(aoaHorzStabDeg / 15.0f) * MaxPitchRate,
+        -(aoaVertStabDeg / 15.0f) * MaxYawRate);
 
       Vector3 restrictedAirspeed = relativeWindspeed;
 
@@ -257,6 +257,18 @@ namespace Wings.Blueprint.Aircraft
         AircraftPhysics.RotationalVelocity = Vector3.Zero;
         AircraftPhysics.Velocity = new Vector3(0, 30, 0);
         AircraftPhysics.VelocityUnitVector = new Vector3(0, 1, 0);
+        Mouse.SetPosition(750, 300);
+      }
+      else if (keyboard.IsKeyDown(Keys.F2))
+      {
+        AircraftBody.Position = Vector3.Zero;
+        AircraftBody.Rotation = new Vector3(0, 0, -Angles.QuarterCircle);
+        AircraftBody.Direction = new Vector2(0, -Angles.QuarterCircle);
+        AircraftBody.ForwardUnitVector = new Vector3(0, -1, 0);
+        AircraftPhysics.Acceleration = Vector3.Zero;
+        AircraftPhysics.RotationalVelocity = Vector3.Zero;
+        AircraftPhysics.Velocity = new Vector3(0, -30, 0);
+        AircraftPhysics.VelocityUnitVector = new Vector3(0, -1, 0);
         Mouse.SetPosition(750, 300);
       }
     }

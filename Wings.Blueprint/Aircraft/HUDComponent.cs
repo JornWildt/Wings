@@ -104,7 +104,7 @@ namespace Wings.Blueprint.Aircraft
 
       var scale = new Vector2(1, 1);
 
-      spriteBatch.Draw(HorizonTexture, position, null, Color.White, rollAngle, origin, scale, SpriteEffects.None, 0.9f);
+      spriteBatch.Draw(HorizonTexture, position, null, Color.White * 0.25f, rollAngle, origin, scale, SpriteEffects.None, 0.9f);
     }
 
 

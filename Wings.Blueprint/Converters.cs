@@ -21,15 +21,33 @@ namespace Wings.Blueprint
       {
         if (direction.X > 0)
         {
-          return new Vector2(
-              MathF.Atan(direction.Z / MathF.Sqrt(direction.X * direction.X + direction.Y * direction.Y)),
-              MathF.Atan(direction.Y / direction.X));
+          if (direction.Y >= 0)
+          {
+            return new Vector2(
+                MathF.Atan(direction.Z / MathF.Sqrt(direction.X * direction.X + direction.Y * direction.Y)),
+                MathF.Atan(direction.Y / direction.X));
+          }
+          else
+          {
+            return new Vector2(
+                MathF.Atan(direction.Z / MathF.Sqrt(direction.X * direction.X + direction.Y * direction.Y)),
+                MathF.Atan(direction.Y / direction.X));
+          }
         }
         else if (direction.X < 0)
         {
-          return new Vector2(
+          if (direction.Y >= 0)
+          {
+            return new Vector2(
               MathF.Atan(direction.Z / MathF.Sqrt(direction.X * direction.X + direction.Y * direction.Y)),
               Angles.HalfCircle + MathF.Atan(direction.Y / direction.X));
+          }
+          else
+          {
+            return new Vector2(
+              MathF.Atan(direction.Z / MathF.Sqrt(direction.X * direction.X + direction.Y * direction.Y)),
+              -(Angles.HalfCircle - MathF.Atan(direction.Y / direction.X)));
+          }
         }
         else
         {
