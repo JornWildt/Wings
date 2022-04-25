@@ -28,7 +28,8 @@ namespace Wings.Blueprint
 
       var aircraftBody = new BodyComponent(id, 
         position: new Vector3(0, 0, 1000),
-        rotation: new Vector3(-Angles.HalfCircle, 0.5f, 0));
+        rotation: new Vector3(0f, 0f, 0));
+        //rotation: new Vector3(-Angles.QuarterCircle, 0f, 0));
       var aircraftPhysics = new PhysicsComponent(id, 
         velocity: new Vector3(30, 0, 0), 
         acceleration: new Vector3(0, 0, 0), 

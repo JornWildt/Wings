@@ -69,7 +69,7 @@ namespace Wings.Blueprint.Aircraft
 
     private void ApplyAerodynamics()
     {
-      CurrentStickPosition = new Vector2(0.5f, 0);
+      //CurrentStickPosition = new Vector2(0, 0.5f);
 
       // [pitch,yaw]
       // If pointing straight up then use aircraft roll as yaw in 2D space
@@ -160,8 +160,13 @@ namespace Wings.Blueprint.Aircraft
       var unYawedAcc = RotateYaw(unRolledAcc, AircraftBody.Rotation.Z);
       AircraftPhysics.Acceleration = RotatePitch(unYawedAcc, AircraftBody.Rotation.Y);
 
-      var x = RotateRoll(AircraftPhysics.RotationalVelocity, AircraftBody.Rotation.X);
-      AircraftPhysics.RotationalVelocity = x;
+      //var x = RotateRoll(AircraftPhysics.RotationalVelocity, AircraftBody.Rotation.X);
+      var y = new Vector3(
+        AircraftPhysics.RotationalVelocity.X,
+        MathF.Cos(AircraftBody.Rotation.X) * AircraftPhysics.RotationalVelocity.Y + MathF.Sin(AircraftBody.Rotation.X) * AircraftPhysics.RotationalVelocity.Z,
+        MathF.Cos(AircraftBody.Rotation.X) * AircraftPhysics.RotationalVelocity.Z + MathF.Sin(AircraftBody.Rotation.X) * AircraftPhysics.RotationalVelocity.Y);
+
+      AircraftPhysics.RotationalVelocity = y;
     }
 
 
