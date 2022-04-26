@@ -46,7 +46,7 @@ namespace Wings.Blueprint.Aircraft
     const int CenterZero = 16;
     const float MaxControlMovement = 100;
 
-    const float MaxRollRate = Angles.FullCircle / 20;
+    const float MaxRollRate = Angles.FullCircle / 5;
     const float MaxPitchRate = Angles.FullCircle / 10;
     const float MaxYawRate = Angles.FullCircle / 20;
 
@@ -121,8 +121,8 @@ namespace Wings.Blueprint.Aircraft
       // Apply "weather wane" effect of vertical and horizontal stabilizers.
       AircraftPhysics.RotationalVelocity = AircraftPhysics.RotationalVelocity + new Vector3(
         0,
-        -(aoaHorzStabDeg / 15.0f) * MaxPitchRate,
-        -(aoaVertStabDeg / 15.0f) * MaxYawRate);
+        -(aoaHorzStabDeg / 10.0f) * MaxPitchRate,
+        -(aoaVertStabDeg / 2.0f) * MaxYawRate);
 
       // Max lift is at max air speed * factor of gravity (factor should be >1 to counter gravity at max speed)
       float lift = (relativeAirspeed.X / MaxAirspeed) * 2f * 9.81f; // So far lift is in "acceleration" unit
@@ -137,7 +137,7 @@ namespace Wings.Blueprint.Aircraft
 
       // Forward pull from engine. More throttle => more pull.
       // More speed yields lesser pull as the propeller's effect reduces with forward speed.
-      float forwardPull = (CurrentThrottle * (MaxAirspeed - relativeAirspeed.X) / MaxAirspeed) * 20; // pull in "acceleration" unit
+      float forwardPull = (CurrentThrottle * MathHelper.Clamp((MaxAirspeed - relativeAirspeed.X), 0, MaxAirspeed) / MaxAirspeed) * 20; // pull in "acceleration" unit
 
       // Drag increases with speed (in "acceleration" unit)
       // FIXME: Add different constants for all three dimensions
@@ -154,7 +154,7 @@ namespace Wings.Blueprint.Aircraft
       // At last, rotate the forces back into the absolute coordinate system
 
       var unRolledAcc = RotateRoll(acceleration, AircraftBody.Rotation.X);
-      var unYawedAcc = RotateYaw(unRolledAcc, -AircraftBody.Rotation.Z);
+      var unYawedAcc = RotateYaw(unRolledAcc, AircraftBody.Rotation.Z);
       AircraftPhysics.Acceleration = RotatePitch(unYawedAcc, AircraftBody.Rotation.Y);
 
       // Rotate rotational velocity around roll axis
@@ -175,6 +175,7 @@ namespace Wings.Blueprint.Aircraft
   Relative speed (p/y)      : {relativeWindDirection.X:###.##} / {relativeWindDirection.Y:###.##}
   Relative speed            : {relativeAirspeed.X:###.##} / {relativeAirspeed.Y:###.##} / {relativeAirspeed.Z:###.##}
   Angle of attack           : {AngleOfAttack.X:###.##} / {AngleOfAttack.Y:###.##} / {AngleOfAttack.Z:###.##}
+  Forward pull              : {forwardPull:###.##}
   Drag                      : {drag.X:###.##} / {drag.Y:###.##} / {drag.Z:###.##}
   Relative acceleration     : {acceleration.X:###.##} / {acceleration.Y:###.##} / {acceleration.Z:###.##}
   Relative rotation velocity: {initialiRotationVelocity.X:###.##} / {initialiRotationVelocity.Y:###.##} / {initialiRotationVelocity.Z:###.##}
@@ -196,8 +197,8 @@ namespace Wings.Blueprint.Aircraft
     private Vector3 RotateYaw(Vector3 v, float yaw)
     {
       return new Vector3(
-        MathF.Cos(yaw) * v.X + MathF.Sin(yaw) * v.Y,
-        -MathF.Sin(yaw) * v.X + MathF.Cos(yaw) * v.Y,
+        MathF.Cos(yaw) * v.X - MathF.Sin(yaw) * v.Y,
+        MathF.Sin(yaw) * v.X + MathF.Cos(yaw) * v.Y,
         v.Z);
     }
 
