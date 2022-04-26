@@ -59,7 +59,7 @@ namespace Wings.Blueprint.Aircraft
     }
 
 
-    public override void LoadContent(ContentManager content)
+    public override void LoadContent(GameEnvironment environment, ContentManager content)
     {
       HorizonTexture = content.Load<Texture2D>("Horizon");
       ControlStickBallTexture = content.Load<Texture2D>("DarkBall");
@@ -67,11 +67,11 @@ namespace Wings.Blueprint.Aircraft
       CompassTexture = content.Load<Texture2D>("Compass");
       SilhouetteTexture = content.Load<Texture2D>("Rear-silhouette");
       DialFont = content.Load<SpriteFont>("HUD");
-      base.LoadContent(content);
+      base.LoadContent(environment, content);
     }
 
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(GameEnvironment environment, SpriteBatch spriteBatch)
     {
       DrawControlStick(spriteBatch);
       DrawHorizon(spriteBatch);

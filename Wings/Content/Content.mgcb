@@ -92,6 +92,18 @@
 /processorParam:TextureFormat=Color
 /build:Horizon.png
 
+#begin Missile.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Missile.png
+
 #begin Rear-silhouette.png
 /importer:TextureImporter
 /processor:TextureProcessor

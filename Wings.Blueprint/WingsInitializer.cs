@@ -2,6 +2,7 @@
 using Elfisk.ECS.Core;
 using Elfisk.ECS.Core.Components;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Wings.Blueprint.Aircraft;
 using Wings.Blueprint.Physics;
 using Wings.Blueprint.Visuals;
@@ -10,6 +11,8 @@ namespace Wings.Blueprint
 {
   public static class WingsInitializer
   {
+    public static ContentManager GameContent { get; set; }
+
     public static void Initialize(GameEnvironment environment)
     {
       IEntityRepository entities = environment.DependencyContainer.Resolve<IEntityRepository>();
@@ -30,6 +33,16 @@ namespace Wings.Blueprint
       entities.AddEntity(BuildSkyItem("GreenDot", 225, 0, 1f, aircraftComponent.AircraftBody));
       entities.AddEntity(BuildSkyItem("GreenDot", 270, 0, 1f, aircraftComponent.AircraftBody));
       entities.AddEntity(BuildSkyItem("GreenDot", 315, 0, 1f, aircraftComponent.AircraftBody));
+
+      EntityId id = EntityId.NewId();
+      Entity spriteRender = new Entity(
+        id,
+        new Component[]
+        {
+          new NamedComponent(id, "Sprite render"),
+          new Sprite3DRenderComponent(id, aircraftComponent.AircraftBody)
+        });
+      entities.AddEntity(spriteRender);
     }
 
 
@@ -68,6 +81,7 @@ namespace Wings.Blueprint
         id,
         new Component[]
         {
+          new NamedComponent(id, "Sky: " + texture),
           new SkyComponent(id, texture, yaw, pitch, scale, centerBody)
         });
     }

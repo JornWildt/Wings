@@ -3,6 +3,7 @@ using System.IO;
 using Elfisk.ECS.Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using Wings.Blueprint.Missiles;
 using Wings.Blueprint.Physics;
 
 namespace Wings.Blueprint.Aircraft
@@ -54,7 +55,7 @@ namespace Wings.Blueprint.Aircraft
     public void Update(GameEnvironment environment, TimeSpan elapsedTime)
     {
       UpdateControlStickState();
-      ReadKeyboardState();
+      ReadKeyboardState(environment);
       ApplyAerodynamics();
     }
 
@@ -244,7 +245,9 @@ namespace Wings.Blueprint.Aircraft
     }
 
 
-    private void ReadKeyboardState()
+    DateTime LastShotTimestamp = DateTime.Now.AddSeconds(-10);
+
+    private void ReadKeyboardState(GameEnvironment environment)
     {
       KeyboardState keyboard = Keyboard.GetState();
 
@@ -261,6 +264,12 @@ namespace Wings.Blueprint.Aircraft
         CurrentRudder = -1f;
       else
         CurrentRudder = 0f;
+
+      if (keyboard.IsKeyDown(Keys.Space) && DateTime.Now - LastShotTimestamp > TimeSpan.FromSeconds(1))
+      {
+        ShootMissile(environment);
+        LastShotTimestamp = DateTime.Now;
+      }
 
       if (keyboard.IsKeyDown(Keys.F1))
       {
@@ -313,10 +322,16 @@ namespace Wings.Blueprint.Aircraft
         System.Diagnostics.Debugger.Break();
       }
 
-      if (keyboard.IsKeyDown(Keys.Space))
+      if (keyboard.IsKeyDown(Keys.F10))
       {
         System.Diagnostics.Debugger.Break();
       }
+    }
+
+    private void ShootMissile(GameEnvironment environment)
+    {
+      Entity missile = MissileSystem.CreateMissile(AircraftBody.Position, AircraftBody.ForwardUnitVector * AircraftPhysics.Velocity.Length() * 1.5f);
+      environment.Entities.AddEntity(missile);
     }
   }
 }

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Elfisk.ECS.Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -32,17 +30,17 @@ namespace Wings.Blueprint.Visuals
     }
 
 
-    public override void LoadContent(ContentManager content)
+    public override void LoadContent(GameEnvironment environment, ContentManager content)
     {
       ItemTexture = content.Load<Texture2D>(TextureName);
       ItemCenter = new Vector2(ItemTexture.Width / 2, ItemTexture.Height / 2);
-      base.LoadContent(content);
+      base.LoadContent(environment, content);
     }
 
     static readonly float ViewportFOVx = MathHelper.ToRadians(45);
     static readonly float ViewportFOVy = MathHelper.ToRadians(45);
 
-    public override void Draw(SpriteBatch spriteBatch)
+    public override void Draw(GameEnvironment environment, SpriteBatch spriteBatch)
     {
       var roll = -CenterBody.Rotation.X;
       var yawDiff = CenterBody.Rotation.Z - Yaw;
@@ -54,7 +52,7 @@ namespace Wings.Blueprint.Visuals
       var dx = (sizeX / 2) / MathF.Tan(ViewportFOVx);
       var dy = (sizeY / 2) / MathF.Tan(ViewportFOVy);
 
-      if (yawDiff > -ViewportFOVx && yawDiff < ViewportFOVx && pitchDiff> -ViewportFOVy && pitchDiff < ViewportFOVy)
+      if (yawDiff > -ViewportFOVx && yawDiff < ViewportFOVx && pitchDiff > -ViewportFOVy && pitchDiff < ViewportFOVy)
       {
         Vector2 location = new Vector2(
           MathF.Tan(yawDiff) * dx,
@@ -68,7 +66,7 @@ namespace Wings.Blueprint.Visuals
           sizeX / 2 + location.X,
           sizeY / 2 + location.Y);
 
-        spriteBatch.Draw(ItemTexture, location, null, Color.White, roll, ItemCenter, new Vector2(Scale,Scale), SpriteEffects.None, 0f);
+        spriteBatch.Draw(ItemTexture, location, null, Color.White, roll, ItemCenter, new Vector2(Scale, Scale), SpriteEffects.None, 0f);
       }
     }
   }

@@ -6,6 +6,7 @@ using Elfisk.ECS.Core;
 using Elfisk.ECS.Core.Implementation;
 using Wings.Blueprint;
 using Wings.Blueprint.Aircraft;
+using Wings.Blueprint.Missiles;
 using Wings.Blueprint.Physics;
 
 namespace Wings
@@ -20,6 +21,7 @@ namespace Wings
       container.AddComponent<IEntityRepository, InMemoryEntityRepository>();
       container.AddComponent<ISystem, PhysicsSystem>();
       container.AddComponent<ISystem, AircraftSystem>();
+      container.AddComponent<ISystem, MissileSystem>();
 
       GameEnvironment environment = new GameEnvironment(container, TimeSpan.FromMilliseconds(100));
 

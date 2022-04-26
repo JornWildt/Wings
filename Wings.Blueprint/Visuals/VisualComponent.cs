@@ -12,10 +12,15 @@ namespace Wings.Blueprint.Visuals
     {
     }
 
-    public virtual void LoadContent(ContentManager content)
+    public virtual void LoadContent(GameEnvironment environment, ContentManager content)
     {
     }
 
-    public abstract void Draw(SpriteBatch spriteBatch);
+    
+    public virtual void Initialize(GameEnvironment environment, GraphicsDevice graphics)
+    {
+    }
+
+    public abstract void Draw(GameEnvironment environment, SpriteBatch spriteBatch);
   }
 }
