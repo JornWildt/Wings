@@ -265,7 +265,7 @@ namespace Wings.Blueprint.Aircraft
       else
         CurrentRudder = 0f;
 
-      if (keyboard.IsKeyDown(Keys.Space) && DateTime.Now - LastShotTimestamp > TimeSpan.FromSeconds(1))
+      if (keyboard.IsKeyDown(Keys.Space) && DateTime.Now - LastShotTimestamp > TimeSpan.FromSeconds(0.25))
       {
         ShootMissile(environment);
         LastShotTimestamp = DateTime.Now;
