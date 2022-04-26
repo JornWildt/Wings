@@ -93,13 +93,15 @@ namespace Wings.Blueprint.Aircraft
         MathF.Cos(roll) * relativeWindDirection_unrotated.X + MathF.Sin(roll) * relativeWindDirection_unrotated.Y,
         MathF.Cos(roll) * relativeWindDirection_unrotated.Y + MathF.Sin(roll) * relativeWindDirection_unrotated.X);
 
+      relativeWindDirection = Converters.Round(relativeWindDirection);
+
       float speed = AircraftPhysics.Velocity.Length();
       Vector3 relativeAirspeed = new Vector3(
         MathF.Cos(relativeWindDirection.X) * MathF.Cos(relativeWindDirection.Y) * speed,
         MathF.Cos(relativeWindDirection.X) * MathF.Sin(relativeWindDirection.Y) * speed,
         MathF.Sin(relativeWindDirection.X) * speed);
 
-      RelativeAirspeed = relativeAirspeed;
+      RelativeAirspeed = relativeAirspeed = Converters.Round(relativeAirspeed);
 
       // AoA given as rotation around X, Y and Z axes
       AngleOfAttack = new Vector3(
@@ -154,8 +156,9 @@ namespace Wings.Blueprint.Aircraft
       // At last, rotate the forces back into the absolute coordinate system
 
       var unRolledAcc = RotateRoll(acceleration, AircraftBody.Rotation.X);
-      var unYawedAcc = RotateYaw(unRolledAcc, AircraftBody.Rotation.Z);
-      AircraftPhysics.Acceleration = RotatePitch(unYawedAcc, AircraftBody.Rotation.Y);
+      var unPitchedAcc = RotatePitch(unRolledAcc, AircraftBody.Rotation.Y);
+      var unYawedAcc = RotateYaw(unPitchedAcc, AircraftBody.Rotation.Z);
+      AircraftPhysics.Acceleration = Converters.Round(unYawedAcc);
 
       // Rotate rotational velocity around roll axis
       var unRolledRotation = new Vector3(
@@ -163,24 +166,23 @@ namespace Wings.Blueprint.Aircraft
         MathF.Cos(AircraftBody.Rotation.X) * AircraftPhysics.RotationalVelocity.Y + MathF.Sin(AircraftBody.Rotation.X) * AircraftPhysics.RotationalVelocity.Z,
         MathF.Cos(AircraftBody.Rotation.X) * AircraftPhysics.RotationalVelocity.Z + MathF.Sin(AircraftBody.Rotation.X) * AircraftPhysics.RotationalVelocity.Y);
 
-      var initialiRotationVelocity = AircraftPhysics.RotationalVelocity;
-      AircraftPhysics.RotationalVelocity = unRolledRotation;
+      AircraftPhysics.RotationalVelocity = Converters.Round(unRolledRotation);
 
       LogFile.WriteLine($@"{DateTime.Now}
   Position                  : {AircraftBody.Position.X:###.##} / {AircraftBody.Position.Y:###.##} / {AircraftBody.Position.Z:###.##}
-  Roll / pitch / yaw        : {AircraftBody.Rotation.X:###.##} / {AircraftBody.Rotation.Y:###.##} / {AircraftBody.Rotation.Z:###.##}
+  Roll / pitch / yaw        : {MathHelper.ToDegrees(AircraftBody.Rotation.X):###.##} / {MathHelper.ToDegrees(AircraftBody.Rotation.Y):###.##} / {MathHelper.ToDegrees(AircraftBody.Rotation.Z):###.##}
   Ground speed              : {AircraftPhysics.Velocity.X:###.##} / {AircraftPhysics.Velocity.Y:###.##} / {AircraftPhysics.Velocity.Z:###.##}
-  Ground speed dir (p/y)    : {velocityDirection.X:###.##} / {velocityDirection.Y:###.##}
-  Direction (p/y)           : {AircraftBody.Direction.X:###.##} / {AircraftBody.Direction.Y:###.##}
-  Relative speed (p/y)      : {relativeWindDirection.X:###.##} / {relativeWindDirection.Y:###.##}
+  Ground speed dir (p/y)    : {MathHelper.ToDegrees(velocityDirection.X):###.##} / {MathHelper.ToDegrees(velocityDirection.Y):###.##}
+  Direction (p/y)           : {MathHelper.ToDegrees(AircraftBody.Direction.X):###.##} / {MathHelper.ToDegrees(AircraftBody.Direction.Y):###.##}
+  Relative speed (p/y)      : {MathHelper.ToDegrees(relativeWindDirection.X):###.##} / {MathHelper.ToDegrees(relativeWindDirection.Y):###.##}
   Relative speed            : {relativeAirspeed.X:###.##} / {relativeAirspeed.Y:###.##} / {relativeAirspeed.Z:###.##}
-  Angle of attack           : {AngleOfAttack.X:###.##} / {AngleOfAttack.Y:###.##} / {AngleOfAttack.Z:###.##}
+  Angle of attack           : {MathHelper.ToDegrees(AngleOfAttack.X):###.##} / {MathHelper.ToDegrees(AngleOfAttack.Y):###.##} / {MathHelper.ToDegrees(AngleOfAttack.Z):###.##}
   Forward pull              : {forwardPull:###.##}
   Drag                      : {drag.X:###.##} / {drag.Y:###.##} / {drag.Z:###.##}
   Relative acceleration     : {acceleration.X:###.##} / {acceleration.Y:###.##} / {acceleration.Z:###.##}
-  Relative rotation velocity: {initialiRotationVelocity.X:###.##} / {initialiRotationVelocity.Y:###.##} / {initialiRotationVelocity.Z:###.##}
+  Relative rotation velocity: {MathHelper.ToDegrees(AircraftPhysics.RotationalVelocity.X):###.##} / {MathHelper.ToDegrees(AircraftPhysics.RotationalVelocity.Y):###.##} / {MathHelper.ToDegrees(AircraftPhysics.RotationalVelocity.Z):###.##}
   Absolute acceleration     : {AircraftPhysics.Acceleration.X:###.##} / {AircraftPhysics.Acceleration.Y:###.##} / {AircraftPhysics.Acceleration.Z:###.##}
-  Absolute rotation velocity: {unRolledRotation.X:###.##} / {unRolledRotation.Y:###.##} / {unRolledRotation.Z:###.##}
+  Absolute rotation velocity: {MathHelper.ToDegrees(unRolledRotation.X):###.##} / {MathHelper.ToDegrees(unRolledRotation.Y):###.##} / {MathHelper.ToDegrees(unRolledRotation.Z):###.##}
 ");
     }
 
@@ -295,6 +297,20 @@ namespace Wings.Blueprint.Aircraft
         AircraftPhysics.Velocity = new Vector3(0, -30, 0);
         AircraftPhysics.VelocityUnitVector = new Vector3(0, -1, 0);
         Mouse.SetPosition(750, 300);
+        System.Diagnostics.Debugger.Break();
+      }
+      else if (keyboard.IsKeyDown(Keys.F4))
+      {
+        AircraftBody.Position = Vector3.Zero;
+        AircraftBody.Rotation = new Vector3(0, MathHelper.ToRadians(20), -Angles.QuarterCircle);
+        AircraftBody.Direction = new Vector2(AircraftBody.Rotation.Y, AircraftBody.Rotation.Z);
+        AircraftBody.ForwardUnitVector = Converters.RotationRadiansToUnitVector(AircraftBody.Direction);
+        AircraftPhysics.Acceleration = Vector3.Zero;
+        AircraftPhysics.RotationalVelocity = Vector3.Zero;
+        AircraftPhysics.Velocity = AircraftBody.ForwardUnitVector * 30f;
+        AircraftPhysics.VelocityUnitVector = AircraftBody.ForwardUnitVector;
+        Mouse.SetPosition(750, 300);
+        System.Diagnostics.Debugger.Break();
       }
 
       if (keyboard.IsKeyDown(Keys.Space))

@@ -66,5 +66,33 @@ namespace Wings.Blueprint
 
     // Round() since Dot() has been seen returning 1.0000002 even on two unit vectors.
     public static float AngleBetweenVectors(Vector3 a, Vector3 b) => MathF.Acos(MathF.Round(Vector3.Dot(Vector3.Normalize(a), Vector3.Normalize(b)), 6));
+
+    private const float zeroBound = 0.0001f;
+
+    public static Vector2 Round(Vector2 v)
+    {
+      Vector2 v2 = RoundX(v);
+      return new Vector2(
+        v2.X > -zeroBound && v2.X < zeroBound ? 0f : v2.X,
+        v2.Y > -zeroBound && v2.Y < zeroBound ? 0f : v2.Y);
+    }
+
+    private static Vector2 RoundX(Vector2 v) => new Vector2(
+      MathF.Round(v.X, 2),
+      MathF.Round(v.Y, 2));
+
+    public static Vector3 Round(Vector3 v)
+    {
+      Vector3 v2 = RoundX(v);
+      return new Vector3(
+        v2.X > -zeroBound && v2.X < zeroBound ? 0f : v2.X,
+        v2.Y > -zeroBound && v2.Y < zeroBound ? 0f : v2.Y,
+        v2.Z > -zeroBound && v2.Z < zeroBound ? 0f : v2.Z);
+    }
+
+    private static Vector3 RoundX(Vector3 v) => new Vector3(
+      MathF.Round(v.X, 2),
+      MathF.Round(v.Y, 2),
+      MathF.Round(v.Z, 2));
   }
 }
