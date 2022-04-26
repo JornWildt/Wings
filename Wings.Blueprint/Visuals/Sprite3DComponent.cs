@@ -9,7 +9,8 @@ namespace Wings.Blueprint.Visuals
   {
     virtual public Texture2D Texture { get; protected set;  }
 
-    virtual public float Scale { get; protected set; }
+    private float _scale;
+    virtual public float Scale() => _scale;
 
     virtual public Vector2 CenterOffsetScreen { get; protected set; }
 
@@ -21,12 +22,7 @@ namespace Wings.Blueprint.Visuals
     {
       Texture = WingsInitializer.GameContent.Load<Texture2D>(textureName);
       CenterOffsetScreen = new Vector2(Texture.Width / 2, Texture.Height / 2);
-      Scale = scale;
+      _scale = scale;
     }
-    
-    
-    //public virtual void LoadContent(GameEnvironment environment, ContentManager content)
-    //{
-    //}
   }
 }

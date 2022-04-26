@@ -17,6 +17,11 @@ namespace Wings.Blueprint.Missiles
         missile.Update(environment, elapsedTime);
       }
 
+      foreach (var puff in environment.Entities.GetComponents<SmokeComponent>())
+      {
+        puff.Update(environment, elapsedTime);
+      }
+
       return Task.CompletedTask;
     }
 
@@ -25,15 +30,17 @@ namespace Wings.Blueprint.Missiles
     {
       EntityId id = EntityId.NewId();
 
+      BodyComponent body = new BodyComponent(id, position, Vector3.Normalize(velocity));
+
       return new Entity(
         id,
         new Component[]
         {
           new NamedComponent(id, "Missile"),
-          new BodyComponent(id, position, Vector3.Normalize(velocity)),
+          body,
           new PhysicsComponent(id, velocity, Vector3.Zero, Vector3.Zero),
-          new Sprite3DComponent(id, "Missile", 1f),
-          new MissileComponent(id)
+          new Sprite3DComponent(id, "Missile", 3f),
+          new MissileComponent(id, body)
         });
     }
   }

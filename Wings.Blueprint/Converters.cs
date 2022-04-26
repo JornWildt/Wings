@@ -15,9 +15,9 @@ namespace Wings.Blueprint
 
 
     // Output x:pitch, y:yaw
-    public static Vector2 UnitVectorToRotationRadians(Vector3 direction, float rotationForVertical)
+    public static Vector2 VectorToRotationRadians(Vector3 direction, float rotationForVertical)
     {
-      if (direction.Z < 1)
+      if (direction.X < -0.0001 || direction.X > 0.0001 || direction.Y < -0.0001 || direction.Y > 0.0001)
       {
         if (direction.X > 0)
         {

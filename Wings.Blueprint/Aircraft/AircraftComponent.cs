@@ -80,7 +80,7 @@ namespace Wings.Blueprint.Aircraft
 
       // [pitch,yaw]
       // If pointing straight up then use aircraft roll as yaw in 2D space
-      Vector2 velocityDirection = Converters.UnitVectorToRotationRadians(AircraftPhysics.VelocityUnitVector, AircraftBody.Rotation.X);
+      Vector2 velocityDirection = Converters.VectorToRotationRadians(AircraftPhysics.VelocityUnitVector, AircraftBody.Rotation.X);
 
       Vector2 relativeWindDirection_unrotated = AircraftBody.Direction - velocityDirection;
       
@@ -330,7 +330,7 @@ namespace Wings.Blueprint.Aircraft
 
     private void ShootMissile(GameEnvironment environment)
     {
-      Entity missile = MissileSystem.CreateMissile(AircraftBody.Position, AircraftBody.ForwardUnitVector * AircraftPhysics.Velocity.Length() * 1.5f);
+      Entity missile = MissileSystem.CreateMissile(AircraftBody.Position, AircraftBody.ForwardUnitVector * AircraftPhysics.Velocity.Length() * 4f);
       environment.Entities.AddEntity(missile);
     }
   }
