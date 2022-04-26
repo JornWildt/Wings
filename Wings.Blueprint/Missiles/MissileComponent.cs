@@ -19,7 +19,7 @@ namespace Wings.Blueprint.Missiles
     {
       MissileBody = missileBody;
       LastSmokePuffTime = DateTime.Now;
-      TargetTime = DateTime.Now.AddSeconds(5);
+      TargetTime = DateTime.Now.AddSeconds(8);
     }
 
 

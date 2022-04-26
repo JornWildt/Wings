@@ -32,7 +32,7 @@ namespace Wings.Blueprint.Missiles
       if (t.TotalSeconds < 1)
         return 1;
 
-      return t < LifeTime ? (float)(t.TotalSeconds * 2) : (float)LifeTime.TotalSeconds;
+      return t < LifeTime ? (float)(t.TotalSeconds * 1) : (float)LifeTime.TotalSeconds;
     }
   }
 }

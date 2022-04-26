@@ -169,6 +169,7 @@ namespace Wings.Blueprint.Aircraft
 
       AircraftPhysics.RotationalVelocity = Converters.Round(unRolledRotation);
 
+#if false
       LogFile.WriteLine($@"{DateTime.Now}
   Position                  : {AircraftBody.Position.X:###.##} / {AircraftBody.Position.Y:###.##} / {AircraftBody.Position.Z:###.##}
   Roll / pitch / yaw        : {MathHelper.ToDegrees(AircraftBody.Rotation.X):###.##} / {MathHelper.ToDegrees(AircraftBody.Rotation.Y):###.##} / {MathHelper.ToDegrees(AircraftBody.Rotation.Z):###.##}
@@ -185,6 +186,7 @@ namespace Wings.Blueprint.Aircraft
   Absolute acceleration     : {AircraftPhysics.Acceleration.X:###.##} / {AircraftPhysics.Acceleration.Y:###.##} / {AircraftPhysics.Acceleration.Z:###.##}
   Absolute rotation velocity: {MathHelper.ToDegrees(unRolledRotation.X):###.##} / {MathHelper.ToDegrees(unRolledRotation.Y):###.##} / {MathHelper.ToDegrees(unRolledRotation.Z):###.##}
 ");
+#endif
     }
 
 

@@ -56,10 +56,15 @@ namespace Wings.Blueprint
               Angles.QuarterCircle * MathF.Sign(direction.Y));
         }
       }
+      else if (direction.Z > 0)
+      {
+        // Vertical vector - up
+        return new Vector2(Angles.QuarterCircle, rotationForVertical);
+      }
       else
       {
-        // Vertical vector
-        return new Vector2(Angles.QuarterCircle, rotationForVertical);
+        // Vertical vector - down
+        return new Vector2(-Angles.QuarterCircle, rotationForVertical);
       }
     }
 

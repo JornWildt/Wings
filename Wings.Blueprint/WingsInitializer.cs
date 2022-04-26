@@ -23,7 +23,10 @@ namespace Wings.Blueprint
       entities.AddEntity(BuildSkyItem("Cloud1", 20, 10, 0.5f, aircraftComponent.AircraftBody));
       entities.AddEntity(BuildSkyItem("Cloud1", -20, 40, 0.75f, aircraftComponent.AircraftBody));
       entities.AddEntity(BuildSkyItem("Sun", 50, 45, 1f, aircraftComponent.AircraftBody));
+      
       entities.AddEntity(BuildSkyItem("Star", 0, 90, 0.25f, aircraftComponent.AircraftBody));
+      entities.AddEntity(BuildSkyItem("GreenDot", 0, 85, 1f, aircraftComponent.AircraftBody));
+      entities.AddEntity(BuildSkyItem("GreenDot", 180, 85, 1f, aircraftComponent.AircraftBody));
 
       entities.AddEntity(BuildSkyItem("GreenDot", 0, 0, 1f, aircraftComponent.AircraftBody));
       entities.AddEntity(BuildSkyItem("GreenDot", 45, 0, 1f, aircraftComponent.AircraftBody));
