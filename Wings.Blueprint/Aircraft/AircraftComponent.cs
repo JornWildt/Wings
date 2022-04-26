@@ -40,7 +40,7 @@ namespace Wings.Blueprint.Aircraft
       AircraftPhysics = aircraftPhysics;
       CurrentThrottle = 0.6f;
 
-      LogFile = new StreamWriter(new FileStream("C:\\tmp\\wings-log.txt", FileMode.Truncate));
+      LogFile = new StreamWriter(new FileStream("C:\\tmp\\wings-log.txt", FileMode.Create));
     }
 
     const int CenterZero = 16;
@@ -96,7 +96,7 @@ namespace Wings.Blueprint.Aircraft
       float speed = AircraftPhysics.Velocity.Length();
       Vector3 relativeAirspeed = new Vector3(
         MathF.Cos(relativeWindDirection.X) * MathF.Cos(relativeWindDirection.Y) * speed,
-        -MathF.Cos(relativeWindDirection.X) * MathF.Sin(relativeWindDirection.Y) * speed,
+        MathF.Cos(relativeWindDirection.X) * MathF.Sin(relativeWindDirection.Y) * speed,
         MathF.Sin(relativeWindDirection.X) * speed);
 
       RelativeAirspeed = relativeAirspeed;
