@@ -38,13 +38,36 @@ namespace Wings.Blueprint.Visuals
     }
 
     static readonly float ViewportFOVx = MathHelper.ToRadians(45);
-    static readonly float ViewportFOVy = MathHelper.ToRadians(45);
+    static readonly float ViewportFOVy = MathHelper.ToRadians(35);
 
     public override void Draw(GameEnvironment environment, SpriteBatch spriteBatch)
     {
-      var roll = -CenterBody.Rotation.X;
-      var yawDiff = CenterBody.Rotation.Z - Yaw;
-      var pitchDiff = CenterBody.Rotation.Y - Pitch;
+#if true
+      CenterBody.Rotation.Deconstruct(out float bodyRoll, out float bodyPitch, out float bodyYaw);
+#else
+      float bodyRoll = 0f;
+      float bodyPitch = MathHelper.ToRadians(80);
+      float bodyYaw = 0f;
+#endif
+
+      float relativeYaw = MathHelper.WrapAngle(bodyYaw - Yaw);
+
+      Vector3 itemVector = new Vector3(
+        MathF.Cos(Pitch) * MathF.Cos(relativeYaw),
+        MathF.Cos(Pitch) * MathF.Sin(relativeYaw),
+        MathF.Sin(Pitch));
+
+      Vector3 unpitchedItemVector = new Vector3(
+        MathF.Cos(bodyPitch) * itemVector.X + MathF.Sin(bodyPitch) * itemVector.Z,
+        itemVector.Y,
+        MathF.Cos(bodyPitch) * itemVector.Z - MathF.Sin(bodyPitch) * itemVector.X);
+
+      Vector2 relativeRadians = Converters.VectorToRotationRadians(unpitchedItemVector, bodyRoll);
+
+#if true
+      float roll = -bodyRoll;
+      float yawDiff = relativeRadians.Y;
+      float pitchDiff = -relativeRadians.X;
 
       var sizeX = spriteBatch.GraphicsDevice.Viewport.Width;
       var sizeY = spriteBatch.GraphicsDevice.Viewport.Height;
@@ -68,6 +91,7 @@ namespace Wings.Blueprint.Visuals
 
         spriteBatch.Draw(ItemTexture, location, null, Color.White, roll, ItemCenter, new Vector2(Scale, Scale), SpriteEffects.None, 0f);
       }
+#endif
     }
   }
 }
