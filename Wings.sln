@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Elfisk.Commons", "Elfisk.Co
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Elfisk.Commons.Castle", "Elfisk.Commons\Elfisk.Commons.Castle\Elfisk.Commons.Castle.csproj", "{E18137D5-FD0E-450A-913E-D5F5A6D9A5BF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wings.Core", "Wings.Core\Wings.Core.csproj", "{36FB81E7-58A4-45FA-ACAF-011C5C29399A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{E18137D5-FD0E-450A-913E-D5F5A6D9A5BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E18137D5-FD0E-450A-913E-D5F5A6D9A5BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E18137D5-FD0E-450A-913E-D5F5A6D9A5BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36FB81E7-58A4-45FA-ACAF-011C5C29399A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36FB81E7-58A4-45FA-ACAF-011C5C29399A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36FB81E7-58A4-45FA-ACAF-011C5C29399A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36FB81E7-58A4-45FA-ACAF-011C5C29399A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

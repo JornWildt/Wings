@@ -1,8 +1,9 @@
 ﻿using System;
 using Elfisk.ECS.Core;
-using Wings.Blueprint.Visuals;
+using Microsoft.Xna.Framework.Content;
+using Wings.Core.Visuals;
 
-namespace Wings.Blueprint.Missiles
+namespace Wings.Core.Missiles
 {
   public class SmokeComponent : Sprite3DComponent
   {
@@ -10,8 +11,8 @@ namespace Wings.Blueprint.Missiles
 
     DateTime Start;
 
-    public SmokeComponent(EntityId id)
-      : base(id, "SmokePuff", 1f)
+    public SmokeComponent(EntityId id, ContentManager content)
+      : base(id, content, "SmokePuff", 1f)
     {
       Start = DateTime.Now;
     }

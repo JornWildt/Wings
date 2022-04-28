@@ -1,10 +1,10 @@
 ﻿using Elfisk.ECS.Core;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Wings.Blueprint;
-using Wings.Blueprint.Visuals;
+using Wings.Core;
+using Wings.Core.Visuals;
 
 namespace Wings
 {
@@ -13,40 +13,47 @@ namespace Wings
     private GraphicsDeviceManager Graphics;
     private SpriteBatch SpriteBatch;
 
-    private GameEnvironment Environment { get; set; }
+    private GameEnvironment InitialEnvironment { get; set; }
+
+    private WingsEnvironment Environment { get; set; }
 
 
     public WingsGame(GameEnvironment environment)
     {
-      Environment = environment;
-
       Graphics = new GraphicsDeviceManager(this);
       Content.RootDirectory = "Content";
       IsMouseVisible = true;
 
-      // What a hack: expose content externally. Needs better implementation.
-      WingsInitializer.GameContent = Content;
+      InitialEnvironment = environment;
+      
+      // Build stuff to show in game - should probably be located somewhere else
+      WingsInitializer.Initialize(environment);
     }
+
 
     protected override void Initialize()
     {
       base.Initialize();
+
+      foreach (var item in Environment.Entities.GetComponents<VisualComponent>())
+      {
+        item.Initialize(Environment);
+      }
     }
+
 
     protected override void LoadContent()
     {
+      Environment = new WingsEnvironment(InitialEnvironment, GraphicsDevice, Content);
+
       SpriteBatch = new SpriteBatch(GraphicsDevice);
 
       foreach (var item in Environment.Entities.GetComponents<VisualComponent>())
       {
-        item.Initialize(Environment, GraphicsDevice);
-      }
-
-      foreach (var item in Environment.Entities.GetComponents<VisualComponent>())
-      {
-        item.LoadContent(Environment, Content);
+        item.LoadContent(Environment);
       }
     }
+
 
     protected override void Update(GameTime gameTime)
     {

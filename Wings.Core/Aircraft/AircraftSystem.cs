@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Elfisk.ECS.Core;
 
-namespace Wings.Blueprint.Aircraft
+namespace Wings.Core.Aircraft
 {
   public class AircraftSystem : ISystem
   {
@@ -10,7 +10,7 @@ namespace Wings.Blueprint.Aircraft
     {
       foreach (var aircraft in environment.Entities.GetComponents<AircraftComponent>())
       {
-        aircraft.Update(environment, elapsedTime);
+        aircraft.Update((WingsEnvironment)environment, elapsedTime);
       }
 
       return Task.CompletedTask;

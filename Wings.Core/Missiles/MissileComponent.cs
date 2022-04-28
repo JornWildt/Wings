@@ -2,10 +2,9 @@
 using Elfisk.ECS.Core;
 using Elfisk.ECS.Core.Components;
 using Microsoft.Xna.Framework;
-using Wings.Blueprint.Physics;
-using Wings.Blueprint.Visuals;
+using Wings.Core.Physics;
 
-namespace Wings.Blueprint.Missiles
+namespace Wings.Core.Missiles
 {
   public class MissileComponent : Component
   {
@@ -23,7 +22,7 @@ namespace Wings.Blueprint.Missiles
     }
 
 
-    public void Update(GameEnvironment environment, TimeSpan elapsedTime)
+    public void Update(WingsEnvironment environment, TimeSpan elapsedTime)
     {
       if (DateTime.Now - LastSmokePuffTime > TimeSpan.FromSeconds(0.25))
       {
@@ -35,7 +34,7 @@ namespace Wings.Blueprint.Missiles
           {
             new NamedComponent(id, "Smoke"),
             new BodyComponent(id, MissileBody.Position, Vector3.Zero),
-            new SmokeComponent(id)
+            new SmokeComponent(id, environment.Content)
           });
 
         environment.Entities.AddEntity(puff);

@@ -3,10 +3,10 @@ using System.IO;
 using Elfisk.ECS.Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using Wings.Blueprint.Missiles;
-using Wings.Blueprint.Physics;
+using Wings.Core.Missiles;
+using Wings.Core.Physics;
 
-namespace Wings.Blueprint.Aircraft
+namespace Wings.Core.Aircraft
 {
   public class AircraftComponent : Component
   {
@@ -52,7 +52,7 @@ namespace Wings.Blueprint.Aircraft
     const float MaxYawRate = Angles.FullCircle / 20;
 
 
-    public void Update(GameEnvironment environment, TimeSpan elapsedTime)
+    public void Update(WingsEnvironment environment, TimeSpan elapsedTime)
     {
       UpdateControlStickState();
       ReadKeyboardState(environment);
@@ -249,7 +249,7 @@ namespace Wings.Blueprint.Aircraft
 
     DateTime LastShotTimestamp = DateTime.Now.AddSeconds(-10);
 
-    private void ReadKeyboardState(GameEnvironment environment)
+    private void ReadKeyboardState(WingsEnvironment environment)
     {
       KeyboardState keyboard = Keyboard.GetState();
 
@@ -330,9 +330,9 @@ namespace Wings.Blueprint.Aircraft
       }
     }
 
-    private void ShootMissile(GameEnvironment environment)
+    private void ShootMissile(WingsEnvironment environment)
     {
-      Entity missile = MissileSystem.CreateMissile(AircraftBody.Position, AircraftBody.ForwardUnitVector * AircraftPhysics.Velocity.Length() * 4f);
+      Entity missile = MissileSystem.CreateMissile(environment.Content, AircraftBody.Position, AircraftBody.ForwardUnitVector * AircraftPhysics.Velocity.Length() * 4f);
       environment.Entities.AddEntity(missile);
     }
   }

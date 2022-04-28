@@ -3,7 +3,7 @@ using Elfisk.ECS.Core;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Wings.Blueprint.Visuals
+namespace Wings.Core.Visuals
 {
   public abstract class VisualComponent : Component
   {
@@ -12,15 +12,15 @@ namespace Wings.Blueprint.Visuals
     {
     }
 
-    public virtual void LoadContent(GameEnvironment environment, ContentManager content)
+    public virtual void LoadContent(WingsEnvironment environment)
     {
     }
 
     
-    public virtual void Initialize(GameEnvironment environment, GraphicsDevice graphics)
+    public virtual void Initialize(WingsEnvironment environment)
     {
     }
 
-    public abstract void Draw(GameEnvironment environment, SpriteBatch spriteBatch);
+    public abstract void Draw(WingsEnvironment environment, SpriteBatch spriteBatch);
   }
 }

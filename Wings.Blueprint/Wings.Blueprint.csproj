@@ -9,5 +9,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Elfisk.ECS\Elfisk.ECS.Core\Elfisk.ECS.Core.csproj" />
+    <ProjectReference Include="..\Wings.Core\Wings.Core.csproj" />
   </ItemGroup>
 </Project>

@@ -3,9 +3,9 @@ using Elfisk.ECS.Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using Wings.Blueprint.Physics;
+using Wings.Core.Physics;
 
-namespace Wings.Blueprint.Visuals
+namespace Wings.Core.Visuals
 {
   public class SkyComponent : VisualComponent, IDerivedComponent
   {
@@ -30,17 +30,18 @@ namespace Wings.Blueprint.Visuals
     }
 
 
-    public override void LoadContent(GameEnvironment environment, ContentManager content)
+    public override void LoadContent(WingsEnvironment environment)
     {
-      ItemTexture = content.Load<Texture2D>(TextureName);
+      ItemTexture = environment.Content.Load<Texture2D>(TextureName);
       ItemCenter = new Vector2(ItemTexture.Width / 2, ItemTexture.Height / 2);
-      base.LoadContent(environment, content);
+
+      base.LoadContent(environment);
     }
 
     static readonly float ViewportFOVx = MathHelper.ToRadians(45);
     static readonly float ViewportFOVy = MathHelper.ToRadians(35);
 
-    public override void Draw(GameEnvironment environment, SpriteBatch spriteBatch)
+    public override void Draw(WingsEnvironment environment, SpriteBatch spriteBatch)
     {
 #if true
       CenterBody.Rotation.Deconstruct(out float bodyRoll, out float bodyPitch, out float bodyYaw);

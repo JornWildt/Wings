@@ -3,10 +3,11 @@ using System.Threading.Tasks;
 using Elfisk.ECS.Core;
 using Elfisk.ECS.Core.Components;
 using Microsoft.Xna.Framework;
-using Wings.Blueprint.Physics;
-using Wings.Blueprint.Visuals;
+using Microsoft.Xna.Framework.Content;
+using Wings.Core.Physics;
+using Wings.Core.Visuals;
 
-namespace Wings.Blueprint.Missiles
+namespace Wings.Core.Missiles
 {
   public class MissileSystem : ISystem
   {
@@ -14,7 +15,7 @@ namespace Wings.Blueprint.Missiles
     {
       foreach (var missile in environment.Entities.GetComponents<MissileComponent>())
       {
-        missile.Update(environment, elapsedTime);
+        missile.Update((WingsEnvironment)environment, elapsedTime);
       }
 
       foreach (var puff in environment.Entities.GetComponents<SmokeComponent>())
@@ -26,7 +27,7 @@ namespace Wings.Blueprint.Missiles
     }
 
 
-    public static Entity CreateMissile(Vector3 position, Vector3 velocity)
+    public static Entity CreateMissile(ContentManager content, Vector3 position, Vector3 velocity)
     {
       EntityId id = EntityId.NewId();
 
@@ -39,7 +40,7 @@ namespace Wings.Blueprint.Missiles
           new NamedComponent(id, "Missile"),
           body,
           new PhysicsComponent(id, velocity, Vector3.Zero, Vector3.Zero),
-          new Sprite3DComponent(id, "Missile", 3f),
+          new Sprite3DComponent(id, content, "Missile", 3f),
           new MissileComponent(id, body)
         });
     }

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Wings.Blueprint
+namespace Wings.Core
 {
   public static class Angles
   {

@@ -2,9 +2,9 @@
 using Elfisk.ECS.Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Wings.Blueprint.Physics;
+using Wings.Core.Physics;
 
-namespace Wings.Blueprint.Visuals
+namespace Wings.Core.Visuals
 {
   public class Sprite3DRenderComponent : VisualComponent, IDerivedComponent
   {
@@ -31,12 +31,12 @@ namespace Wings.Blueprint.Visuals
     }
 
 
-    public override void Initialize(GameEnvironment environment, GraphicsDevice graphics)
+    public override void Initialize(WingsEnvironment environment)
     {
-      base.Initialize(environment, graphics);
+      base.Initialize(environment);
 
-      ViewportSizeX = graphics.Viewport.Width;
-      ViewportSizeY = graphics.Viewport.Height;
+      ViewportSizeX = environment.Graphics.Viewport.Width;
+      ViewportSizeY = environment.Graphics.Viewport.Height;
 
       ViewportSizeX_2 = ViewportSizeX / 2f;
       ViewportSizeY_2 = ViewportSizeY / 2f;
@@ -46,7 +46,7 @@ namespace Wings.Blueprint.Visuals
     }
 
 
-    public override void Draw(GameEnvironment environment, SpriteBatch spriteBatch)
+    public override void Draw(WingsEnvironment environment, SpriteBatch spriteBatch)
     {
       var roll = -OriginBody.Rotation.X;
 

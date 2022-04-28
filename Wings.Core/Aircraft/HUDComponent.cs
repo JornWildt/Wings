@@ -3,10 +3,10 @@ using Elfisk.ECS.Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using Wings.Blueprint.Physics;
-using Wings.Blueprint.Visuals;
+using Wings.Core.Physics;
+using Wings.Core.Visuals;
 
-namespace Wings.Blueprint.Aircraft
+namespace Wings.Core.Aircraft
 {
   public class HUDComponent : VisualComponent, IDerivedComponent
   {
@@ -59,19 +59,22 @@ namespace Wings.Blueprint.Aircraft
     }
 
 
-    public override void LoadContent(GameEnvironment environment, ContentManager content)
+    public override void LoadContent(WingsEnvironment environment)
     {
+      var content = environment.Content;
+
       HorizonTexture = content.Load<Texture2D>("Horizon");
       ControlStickBallTexture = content.Load<Texture2D>("DarkBall");
       ControlStickFaceTexture = content.Load<Texture2D>("ControlStickFace");
       CompassTexture = content.Load<Texture2D>("Compass");
       SilhouetteTexture = content.Load<Texture2D>("Rear-silhouette");
       DialFont = content.Load<SpriteFont>("HUD");
-      base.LoadContent(environment, content);
+      
+      base.LoadContent(environment);
     }
 
 
-    public override void Draw(GameEnvironment environment, SpriteBatch spriteBatch)
+    public override void Draw(WingsEnvironment environment, SpriteBatch spriteBatch)
     {
       DrawControlStick(spriteBatch);
       DrawHorizon(spriteBatch);

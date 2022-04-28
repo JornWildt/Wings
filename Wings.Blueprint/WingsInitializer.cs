@@ -3,9 +3,9 @@ using Elfisk.ECS.Core;
 using Elfisk.ECS.Core.Components;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
-using Wings.Blueprint.Aircraft;
-using Wings.Blueprint.Physics;
-using Wings.Blueprint.Visuals;
+using Wings.Core.Aircraft;
+using Wings.Core.Physics;
+using Wings.Core.Visuals;
 
 namespace Wings.Blueprint
 {

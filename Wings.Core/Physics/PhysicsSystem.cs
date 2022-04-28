@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Elfisk.ECS.Core;
 using Microsoft.Xna.Framework;
 
-namespace Wings.Blueprint.Physics
+namespace Wings.Core.Physics
 {
   public class PhysicsSystem : ISystem
   {

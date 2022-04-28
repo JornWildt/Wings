@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 
-namespace Wings.Blueprint
+namespace Wings.Core
 {
   public static class Converters
   {

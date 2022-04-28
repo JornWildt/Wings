@@ -5,9 +5,10 @@ using Elfisk.Commons.Castle;
 using Elfisk.ECS.Core;
 using Elfisk.ECS.Core.Implementation;
 using Wings.Blueprint;
-using Wings.Blueprint.Aircraft;
-using Wings.Blueprint.Missiles;
-using Wings.Blueprint.Physics;
+using Wings.Core;
+using Wings.Core.Aircraft;
+using Wings.Core.Missiles;
+using Wings.Core.Physics;
 
 namespace Wings
 {
@@ -24,8 +25,6 @@ namespace Wings
       container.AddComponent<ISystem, MissileSystem>();
 
       GameEnvironment environment = new GameEnvironment(container, TimeSpan.FromMilliseconds(100));
-
-      WingsInitializer.Initialize(environment);
 
       using (var game = new WingsGame(environment))
         game.Run();
