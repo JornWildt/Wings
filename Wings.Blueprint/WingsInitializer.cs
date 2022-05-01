@@ -11,13 +11,13 @@ namespace Wings.Blueprint
 {
   public static class WingsInitializer
   {
-    public static ContentManager GameContent { get; set; }
+    public static AircraftComponent aircraftComponent;
 
     public static void Initialize(GameEnvironment environment)
     {
       IEntityRepository entities = environment.DependencyContainer.Resolve<IEntityRepository>();
 
-      Entity aircraft = BuildAircraft(out AircraftComponent aircraftComponent);
+      Entity aircraft = BuildAircraft(out aircraftComponent);
       entities.AddEntity(aircraft);
 
       entities.AddEntity(BuildSkyItem("Cloud1", 20, 10, 0.5f, aircraftComponent.AircraftBody));
