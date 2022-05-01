@@ -36,8 +36,12 @@ namespace Wings.Core.Physics
 
         p.Item1.Rotation = new Vector3(roll, pitch, yaw);
 
-        p.Item1.Direction = new Vector2(p.Item1.Rotation.Y, p.Item1.Rotation.Z);
-        p.Item1.ForwardUnitVector = Converters.RotationRadiansToUnitVector(p.Item1.Direction);
+        p.Item1.ForwardDirection = new Vector2(pitch, yaw);
+        p.Item1.ForwardUnitVector = Converters.RotationRadiansToUnitVector(p.Item1.ForwardDirection);
+
+        p.Item1.UpDirection = new Vector2(p.Item1.Rotation.Y + Angles.QuarterCircle, p.Item1.Rotation.Z);
+        p.Item1.UpUnitVector = Converters.RotationRadiansToUnitVector(p.Item1.UpDirection);
+        
         p.Item2.VelocityUnitVector = p.Item2.Velocity.Length() > 0 ? Vector3.Normalize(p.Item2.Velocity) : new Vector3(0, 0, 0);
       }
 

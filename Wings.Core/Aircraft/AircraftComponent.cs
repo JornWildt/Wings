@@ -82,7 +82,7 @@ namespace Wings.Core.Aircraft
       // If pointing straight up then use aircraft roll as yaw in 2D space
       Vector2 velocityDirection = Converters.VectorToRotationRadians(AircraftPhysics.VelocityUnitVector, AircraftBody.Rotation.X);
 
-      Vector2 relativeWindDirection_unrotated = AircraftBody.Direction - velocityDirection;
+      Vector2 relativeWindDirection_unrotated = AircraftBody.ForwardDirection - velocityDirection;
       
       relativeWindDirection_unrotated = new Vector2(
         MathHelper.WrapAngle(relativeWindDirection_unrotated.X),
@@ -275,7 +275,7 @@ namespace Wings.Core.Aircraft
 
       if (keyboard.IsKeyDown(Keys.F1))
       {
-        AircraftBody.Direction = Vector2.Zero;
+        AircraftBody.ForwardDirection = Vector2.Zero;
         AircraftBody.ForwardUnitVector = new Vector3(1, 0, 0);
         AircraftBody.Position = Vector3.Zero;
         AircraftBody.Rotation = Vector3.Zero;
@@ -289,7 +289,7 @@ namespace Wings.Core.Aircraft
       {
         AircraftBody.Position = Vector3.Zero;
         AircraftBody.Rotation = new Vector3(0, 0, Angles.QuarterCircle);
-        AircraftBody.Direction = new Vector2(0, Angles.QuarterCircle);
+        AircraftBody.ForwardDirection = new Vector2(0, Angles.QuarterCircle);
         AircraftBody.ForwardUnitVector = new Vector3(0, 1, 0);
         AircraftPhysics.Acceleration = Vector3.Zero;
         AircraftPhysics.RotationalVelocity = Vector3.Zero;
@@ -301,7 +301,7 @@ namespace Wings.Core.Aircraft
       {
         AircraftBody.Position = Vector3.Zero;
         AircraftBody.Rotation = new Vector3(0, 0, -Angles.QuarterCircle);
-        AircraftBody.Direction = new Vector2(0, -Angles.QuarterCircle);
+        AircraftBody.ForwardDirection = new Vector2(0, -Angles.QuarterCircle);
         AircraftBody.ForwardUnitVector = new Vector3(0, -1, 0);
         AircraftPhysics.Acceleration = Vector3.Zero;
         AircraftPhysics.RotationalVelocity = Vector3.Zero;
@@ -314,8 +314,8 @@ namespace Wings.Core.Aircraft
       {
         AircraftBody.Position = Vector3.Zero;
         AircraftBody.Rotation = new Vector3(0, MathHelper.ToRadians(20), -Angles.QuarterCircle);
-        AircraftBody.Direction = new Vector2(AircraftBody.Rotation.Y, AircraftBody.Rotation.Z);
-        AircraftBody.ForwardUnitVector = Converters.RotationRadiansToUnitVector(AircraftBody.Direction);
+        AircraftBody.ForwardDirection = new Vector2(AircraftBody.Rotation.Y, AircraftBody.Rotation.Z);
+        AircraftBody.ForwardUnitVector = Converters.RotationRadiansToUnitVector(AircraftBody.ForwardDirection);
         AircraftPhysics.Acceleration = Vector3.Zero;
         AircraftPhysics.RotationalVelocity = Vector3.Zero;
         AircraftPhysics.Velocity = AircraftBody.ForwardUnitVector * 30f;

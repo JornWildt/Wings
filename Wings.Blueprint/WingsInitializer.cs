@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Content;
 using Wings.Core.Aircraft;
 using Wings.Core.Physics;
 using Wings.Core.Visuals;
+using Wings.Core.WorldMap;
 
 namespace Wings.Blueprint
 {
@@ -47,6 +48,16 @@ namespace Wings.Blueprint
           new Sprite3DRenderComponent(id, aircraftComponent.AircraftBody)
         });
       entities.AddEntity(spriteRender);
+
+      id = EntityId.NewId();
+      Entity render3D = new Entity(
+        id,
+        new Component[]
+        {
+          new NamedComponent(id, "3D render"),
+          new WorldMapRenderComponent(id, aircraftComponent.AircraftBody)
+        });
+      entities.AddEntity(render3D);
     }
 
 

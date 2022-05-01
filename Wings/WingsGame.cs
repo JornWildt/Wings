@@ -13,12 +13,6 @@ namespace Wings
     private GraphicsDeviceManager Graphics;
     private SpriteBatch SpriteBatch;
 
-    private Matrix CameraProjection;
-
-    private VertexBuffer VertexBuffer;
-
-    private Model BoxModel;
-
     private BasicEffect BasicEffect;
 
     private GameEnvironment InitialEnvironment { get; set; }
@@ -48,28 +42,10 @@ namespace Wings
         item.Initialize(Environment);
       }
 
-      CameraProjection = Matrix.CreatePerspectiveFieldOfView(
-        fieldOfView: MathHelper.ToRadians(90),
-        aspectRatio: Graphics.PreferredBackBufferWidth / Graphics.PreferredBackBufferHeight,
-        nearPlaneDistance: 0.1f,
-        farPlaneDistance: 10000f);
-
-      BasicEffect = new BasicEffect(GraphicsDevice);
-      BasicEffect.Alpha = 1f;
-      BasicEffect.VertexColorEnabled = true;
-      BasicEffect.LightingEnabled = false;
-      BasicEffect.World = Matrix.CreateWorld(new Vector3(0, 0, 0), new Vector3(1, 0, 0), new Vector3(0, 0, 1));
-
-      var triangleVertices = new VertexPositionColor[3];
-      triangleVertices[0] = new VertexPositionColor(new Vector3(
-                            0, 200, 0), Color.Red);
-      triangleVertices[1] = new VertexPositionColor(new Vector3(-
-                            200, -200, 0), Color.Green);
-      triangleVertices[2] = new VertexPositionColor(new Vector3(
-                            200, -200, 0), Color.Blue);
-
-      VertexBuffer = new VertexBuffer(GraphicsDevice, typeof(VertexPositionColor), 3, BufferUsage.WriteOnly);
-      VertexBuffer.SetData(triangleVertices);
+      foreach (var item in Environment.Entities.GetComponents<Visual3DComponent>())
+      {
+        item.Initialize(Environment);
+      }
     }
 
 
@@ -84,7 +60,10 @@ namespace Wings
         item.LoadContent(Environment);
       }
 
-      BoxModel = Content.Load<Model>("3D/PineTree2");
+      foreach (var item in Environment.Entities.GetComponents<Visual3DComponent>())
+      {
+        item.LoadContent(Environment);
+      }
     }
 
 
@@ -104,25 +83,11 @@ namespace Wings
 
     protected override void Draw(GameTime gameTime)
     {
-      var camTarget = new Vector3(0f, 0f, 0f);
-      var camPosition = new Vector3(0f, 0f, -100f);
-
-      var ab = WingsInitializer.aircraftComponent.AircraftBody;
-      var viewMatrix = Matrix.CreateLookAt(ab.Position, ab.Position+ab.ForwardUnitVector, new Vector3(0, 0, 1));
-      //var viewMatrix = Matrix.CreateLookAt(new Vector3(0,0,1000), new Vector3(100,0,1000), new Vector3(0,0,1));
-
-      //BasicEffect.Projection = CameraProjection;
-      //BasicEffect.View = viewMatrix;
-
       GraphicsDevice.Clear(Color.AliceBlue);
 
-      for (int x=-10; x<10; ++x)
+      foreach (var item in Environment.Entities.GetComponents<Visual3DComponent>())
       {
-        for (int y = -10; y < 10; ++y)
-        {
-          var world = Matrix.CreateWorld(new Vector3(x*100, y*100, 900), new Vector3(0, 0, -1), new Vector3(1, 0, 0));
-          DrawModel(BoxModel, world, viewMatrix, CameraProjection);
-        }
+        item.Draw(Environment);
       }
 
       SpriteBatch.Begin(SpriteSortMode.FrontToBack);
@@ -137,22 +102,6 @@ namespace Wings
       base.Draw(gameTime);
     }
 
-
-    private void DrawModel(Model model, Matrix world, Matrix view, Matrix projection)
-    {
-      foreach (ModelMesh mesh in model.Meshes)
-      {
-        foreach (BasicEffect effect in mesh.Effects)
-        {
-          effect.EnableDefaultLighting();
-          effect.World = world;
-          effect.View = view;
-          effect.Projection = projection;
-        }
-
-        mesh.Draw();
-      }
-    }
 
     //protected override void Draw(GameTime gameTime)
     //{
