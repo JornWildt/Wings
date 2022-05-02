@@ -33,7 +33,7 @@ namespace Wings.Core.Missiles
           new Component[]
           {
             new NamedComponent(id, "Smoke"),
-            new BodyComponent(id, MissileBody.Position, Vector3.Zero),
+            new BodyComponent(id, MissileBody.Position, Matrix.Identity),
             new SmokeComponent(id, environment.Content)
           });
 

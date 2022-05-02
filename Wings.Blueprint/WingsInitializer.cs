@@ -3,6 +3,7 @@ using Elfisk.ECS.Core;
 using Elfisk.ECS.Core.Components;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
+using Wings.Core;
 using Wings.Core.Aircraft;
 using Wings.Core.Physics;
 using Wings.Core.Visuals;
@@ -67,12 +68,12 @@ namespace Wings.Blueprint
 
       var aircraftBody = new BodyComponent(id, 
         position: new Vector3(0, 0, 1000),
-        rotation: new Vector3(0f, 0f, 0));
-        //rotation: new Vector3(-Angles.QuarterCircle, 0f, 0));
+        rotation: Matrix.Identity);
+      
       var aircraftPhysics = new PhysicsComponent(id, 
         velocity: new Vector3(30, 0, 0), 
         acceleration: new Vector3(0, 0, 0), 
-        rotationalVelocity: new Vector3(0,0,0));
+        rotationalVelocity: Matrix.Identity);
       aircraft = new AircraftComponent(id, aircraftBody, aircraftPhysics);
 
       return new Entity(

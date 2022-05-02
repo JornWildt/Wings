@@ -98,11 +98,13 @@ namespace Wings.Core.Aircraft
 
     public void DrawHorizon(SpriteBatch spriteBatch)
     {
-      float pitchAngle = AircraftBody.Rotation.Y;
+      Vector2 rotation = Converters.VectorToRotationRadians(AircraftBody.ForwardUnitVector, 0);
+
+      float pitchAngle = rotation.X;
       float pitchOffset = Math.Max(Math.Min(pitchAngle * 100, 200), -200);
       Vector2 position = new Vector2(400, 250 + pitchOffset);
 
-      float rollAngle = -AircraftBody.Rotation.X;
+      float rollAngle = -AircraftBody.ForwardUnitVector.Y;
       var origin = new Vector2(200, 22);
 
       var scale = new Vector2(1, 1);
@@ -123,14 +125,15 @@ namespace Wings.Core.Aircraft
       string text = $"Air speed: {Converters.MetersSecondToKilometersHour(Aircraft.RelativeAirspeed.X):####} km/h. AoA: {MathHelper.ToDegrees(Aircraft.AngleOfAttack.Y):N0} (Yaw AoA: {MathHelper.ToDegrees(Aircraft.AngleOfAttack.Z):N0}, Roll AoA: {MathHelper.ToDegrees(Aircraft.AngleOfAttack.X):N0}).";
       spriteBatch.DrawString(DialFont, text, AirspeedLocation, Color.Black, 0, Vector2.Zero, 1, SpriteEffects.None, 0.9f);
       
-      text = $"Absolute speed: {Converters.MetersSecondToKilometersHour(Aircraft.AircraftPhysics.Velocity.Length()):N1} km/h ({Converters.MetersSecondToKilometersHour(AircraftPhysics.Velocity.X):N1}/{Converters.MetersSecondToKilometersHour(AircraftPhysics.Velocity.Y):N1}/{Converters.MetersSecondToKilometersHour(AircraftPhysics.Velocity.Z):N1}). Vrot = ({AircraftPhysics.RotationalVelocity.X:N3} / {AircraftPhysics.RotationalVelocity.Y:N3} / {AircraftPhysics.RotationalVelocity.Z:N3})";
-      spriteBatch.DrawString(DialFont, text, AirspeedLocation+new Vector2(0,20), Color.Black, 0, Vector2.Zero, 1, SpriteEffects.None, 0.9f);
+      //text = $"Absolute speed: {Converters.MetersSecondToKilometersHour(Aircraft.AircraftPhysics.Velocity.Length()):N1} km/h ({Converters.MetersSecondToKilometersHour(AircraftPhysics.Velocity.X):N1}/{Converters.MetersSecondToKilometersHour(AircraftPhysics.Velocity.Y):N1}/{Converters.MetersSecondToKilometersHour(AircraftPhysics.Velocity.Z):N1}). Vrot = ({AircraftPhysics.RotationalVelocity.X:N3} / {AircraftPhysics.RotationalVelocity.Y:N3} / {AircraftPhysics.RotationalVelocity.Z:N3})";
+      //spriteBatch.DrawString(DialFont, text, AirspeedLocation+new Vector2(0,20), Color.Black, 0, Vector2.Zero, 1, SpriteEffects.None, 0.9f);
     }
 
 
     public void DrawHeight(SpriteBatch spriteBatch)
     {
-      string text = $"Height: {AircraftBody.Position.Z:N0} m. Roll: {MathHelper.ToDegrees(AircraftBody.Rotation.X):N0}. Pitch: {MathHelper.ToDegrees(AircraftBody.Rotation.Y):N0}. Yaw: {MathHelper.ToDegrees(AircraftBody.Rotation.Z):N0}. ForwardVector: ({AircraftBody.ForwardUnitVector.X:N1} / {AircraftBody.ForwardUnitVector.Y:N1} / {AircraftBody.ForwardUnitVector.Z:N1})";
+      //string text = $"Height: {AircraftBody.Position.Z:N0} m. Roll: {MathHelper.ToDegrees(AircraftBody.Rotation.X):N0}. Pitch: {MathHelper.ToDegrees(AircraftBody.Rotation.Y):N0}. Yaw: {MathHelper.ToDegrees(AircraftBody.Rotation.Z):N0}. ForwardVector: ({AircraftBody.ForwardUnitVector.X:N1} / {AircraftBody.ForwardUnitVector.Y:N1} / {AircraftBody.ForwardUnitVector.Z:N1})";
+      string text = $"Height: {AircraftBody.Position.Z:N0} m.";
       spriteBatch.DrawString(DialFont, text, HeightLocation, Color.Black, 0, Vector2.Zero, 1, SpriteEffects.None, 0.9f);
     }
 
@@ -144,6 +147,7 @@ namespace Wings.Core.Aircraft
 
     public void DrawCompass(SpriteBatch spriteBatch)
     {
+#if false
       float yawAngle = AircraftBody.Rotation.Z;
 
       var origin = new Vector2(100, 100);
@@ -151,11 +155,13 @@ namespace Wings.Core.Aircraft
       var scale = new Vector2(0.5f, 0.5f);
 
       spriteBatch.Draw(CompassTexture, CompassLocation, null, Color.White, yawAngle, origin, scale, SpriteEffects.None, 0.9f);
+#endif
     }
 
 
     public void DrawSilhuette(SpriteBatch spriteBatch)
     {
+#if false
       float rollAngle = AircraftBody.Rotation.X;
 
       var origin = new Vector2(100, 35);
@@ -163,6 +169,7 @@ namespace Wings.Core.Aircraft
       var scale = new Vector2(1f, 1 - Math.Abs(AircraftBody.Rotation.Y) / MathF.PI);
 
       spriteBatch.Draw(SilhouetteTexture, SilhouetteLocation, null, Color.White, rollAngle, origin, scale, SpriteEffects.None, 0.9f);
+#endif
     }
   }
 }

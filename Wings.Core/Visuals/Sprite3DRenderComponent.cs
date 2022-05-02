@@ -48,6 +48,7 @@ namespace Wings.Core.Visuals
 
     public override void Draw(WingsEnvironment environment, SpriteBatch spriteBatch)
     {
+#if false
       var roll = -OriginBody.Rotation.X;
 
       foreach (var p in environment.Entities.GetComponents<BodyComponent, Sprite3DComponent>())
@@ -78,8 +79,7 @@ namespace Wings.Core.Visuals
           spriteBatch.Draw(p.Item2.Texture, screenPosition, null, Color.White, roll, p.Item2.CenterOffsetScreen, new Vector2(scale, scale), SpriteEffects.None, 0.1f);
         }
       }
-
+#endif
     }
   }
-
 }

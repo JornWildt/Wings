@@ -43,6 +43,7 @@ namespace Wings.Core.Visuals
 
     public override void Draw(WingsEnvironment environment, SpriteBatch spriteBatch)
     {
+#if false
 #if true
       CenterBody.Rotation.Deconstruct(out float bodyRoll, out float bodyPitch, out float bodyYaw);
 #else
@@ -92,6 +93,7 @@ namespace Wings.Core.Visuals
 
         spriteBatch.Draw(ItemTexture, location, null, Color.White, roll, ItemCenter, new Vector2(Scale, Scale), SpriteEffects.None, 0f);
       }
+#endif
 #endif
     }
   }

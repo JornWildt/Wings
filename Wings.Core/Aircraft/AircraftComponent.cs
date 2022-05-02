@@ -56,7 +56,7 @@ namespace Wings.Core.Aircraft
     {
       UpdateControlStickState();
       ReadKeyboardState(environment);
-      ApplyAerodynamics();
+      ApplyAerodynamics(elapsedTime);
     }
 
 
@@ -73,42 +73,47 @@ namespace Wings.Core.Aircraft
       CalculateRelativeAirspeedAndAngleOfAttack();
 #endif
 
-    private void ApplyAerodynamics()
+    private void ApplyAerodynamics(TimeSpan elapsedTime)
     {
       //CurrentStickPosition = new Vector2(0f, 0f);
       //CurrentRudder = -1f;
 
       // [pitch,yaw]
       // If pointing straight up then use aircraft roll as yaw in 2D space
-      Vector2 velocityDirection = Converters.VectorToRotationRadians(AircraftPhysics.VelocityUnitVector, AircraftBody.Rotation.X);
+      //Vector2 velocityDirection = Converters.VectorToRotationRadians(AircraftPhysics.VelocityUnitVector, AircraftBody.Rotation.X);
 
-      Vector2 relativeWindDirection_unrotated = AircraftBody.ForwardDirection - velocityDirection;
-      
-      relativeWindDirection_unrotated = new Vector2(
-        MathHelper.WrapAngle(relativeWindDirection_unrotated.X),
-        MathHelper.WrapAngle(relativeWindDirection_unrotated.Y));
+      //Vector2 relativeWindDirection_unrotated = AircraftBody.ForwardDirection - velocityDirection;
 
-      // Rotate relative wind around roll axis (X).
-      float roll = AircraftBody.Rotation.X;
-      Vector2 relativeWindDirection = new Vector2(
-        MathF.Cos(roll) * relativeWindDirection_unrotated.X + MathF.Sin(roll) * relativeWindDirection_unrotated.Y,
-        MathF.Cos(roll) * relativeWindDirection_unrotated.Y + MathF.Sin(roll) * relativeWindDirection_unrotated.X);
+      //relativeWindDirection_unrotated = new Vector2(
+      //  MathHelper.WrapAngle(relativeWindDirection_unrotated.X),
+      //  MathHelper.WrapAngle(relativeWindDirection_unrotated.Y));
 
-      relativeWindDirection = Converters.Round(relativeWindDirection);
+      //// Rotate relative wind around roll axis (X).
+      //float roll = AircraftBody.Rotation.X;
+      //Vector2 relativeWindDirection = new Vector2(
+      //  MathF.Cos(roll) * relativeWindDirection_unrotated.X + MathF.Sin(roll) * relativeWindDirection_unrotated.Y,
+      //  MathF.Cos(roll) * relativeWindDirection_unrotated.Y + MathF.Sin(roll) * relativeWindDirection_unrotated.X);
+
+      //relativeWindDirection = Converters.Round(relativeWindDirection);
 
       float speed = AircraftPhysics.Velocity.Length();
-      Vector3 relativeAirspeed = new Vector3(
-        MathF.Cos(relativeWindDirection.X) * MathF.Cos(relativeWindDirection.Y) * speed,
-        MathF.Cos(relativeWindDirection.X) * MathF.Sin(relativeWindDirection.Y) * speed,
-        MathF.Sin(relativeWindDirection.X) * speed);
+      
+      //Vector3 relativeAirspeed = new Vector3(
+      //  MathF.Cos(relativeWindDirection.X) * MathF.Cos(relativeWindDirection.Y) * speed,
+      //  MathF.Cos(relativeWindDirection.X) * MathF.Sin(relativeWindDirection.Y) * speed,
+      //  MathF.Sin(relativeWindDirection.X) * speed);
+
+      Vector3 relativeAirspeed = (AircraftBody.ForwardUnitVector - AircraftPhysics.VelocityUnitVector) * speed;
 
       RelativeAirspeed = relativeAirspeed = Converters.Round(relativeAirspeed);
 
+      Vector2 relativeWindDirection = Converters.VectorToRotationRadians(relativeAirspeed, 0);
+
       // AoA given as rotation around X, Y and Z axes
-      AngleOfAttack = new Vector3(
-        0, 
-        relativeWindDirection.X,
-        relativeWindDirection.Y);
+      //AngleOfAttack = new Vector3(
+      //  0, 
+      //  relativeWindDirection.Y / ,
+      //  relativeWindDirection.Y);
 
       // Get angle of attack in degrees as it is easier to work with (since wing lift is normally given relative to AoA in degrees)
       float aoaWingDeg = MathHelper.ToDegrees(AngleOfAttack.Y) + 4 /* wing incidence */;
@@ -116,16 +121,16 @@ namespace Wings.Core.Aircraft
       float aoaVertStabDeg = MathHelper.ToDegrees(AngleOfAttack.Z);
 
       // Rotational velocity depends on stick position (relative to aircraft)
-      AircraftPhysics.RotationalVelocity = new Vector3(
-        MaxRollRate * CurrentStickPosition.X,
-        MaxPitchRate * CurrentStickPosition.Y,
-        MaxYawRate * CurrentRudder);
+      Matrix rotationalVelocity = Matrix.CreateFromYawPitchRoll(
+        MaxRollRate * CurrentStickPosition.X * (float)elapsedTime.TotalSeconds/10,
+        MaxPitchRate * CurrentStickPosition.Y * (float)elapsedTime.TotalSeconds/10,
+        MaxYawRate * CurrentRudder * (float)elapsedTime.TotalSeconds);
 
       // Apply "weather wane" effect of vertical and horizontal stabilizers.
-      AircraftPhysics.RotationalVelocity = AircraftPhysics.RotationalVelocity + new Vector3(
-        0,
-        -(aoaHorzStabDeg / 10.0f) * MaxPitchRate,
-        -(aoaVertStabDeg / 2.0f) * MaxYawRate);
+      //rotationalVelocity = rotationalVelocity + new Vector3(
+      //  0,
+      //  -(aoaHorzStabDeg / 10.0f) * MaxPitchRate,
+      //  -(aoaVertStabDeg / 2.0f) * MaxYawRate);
 
       // Max lift is at max air speed * factor of gravity (factor should be >1 to counter gravity at max speed)
       float lift = (relativeAirspeed.X / MaxAirspeed) * 2f * 9.81f; // So far lift is in "acceleration" unit
@@ -150,24 +155,31 @@ namespace Wings.Core.Aircraft
         (relativeAirspeed.Z * relativeAirspeed.Z / (MaxAirspeed * MaxAirspeed)) * -50 * MathF.Sign(relativeAirspeed.Z));
 
       // Calculate X/Y/Z acceleration (relative to aircraft)
-      Vector3 acceleration =
+      Vector3 relativeAcceleration =
         new Vector3(forwardPull, 0, lift)
         + drag;
 
       // At last, rotate the forces back into the absolute coordinate system
+      Vector3 acceleration = Vector3.Transform(relativeAcceleration, AircraftBody.Rotation);
 
-      var unRolledAcc = RotateRoll(acceleration, AircraftBody.Rotation.X);
-      var unPitchedAcc = RotatePitch(unRolledAcc, AircraftBody.Rotation.Y);
-      var unYawedAcc = RotateYaw(unPitchedAcc, AircraftBody.Rotation.Z);
-      AircraftPhysics.Acceleration = Converters.Round(unYawedAcc);
+      //var unRolledAcc = RotateRoll(relativeAcceleration, AircraftBody.Rotation.X);
+      //var unPitchedAcc = RotatePitch(unRolledAcc, AircraftBody.Rotation.Y);
+      //var unYawedAcc = RotateYaw(unPitchedAcc, AircraftBody.Rotation.Z);
+      //Vector3 acceleration = Converters.Round(unYawedAcc);
 
       // Rotate rotational velocity around roll axis
-      var unRolledRotation = new Vector3(
-        AircraftPhysics.RotationalVelocity.X,
-        MathF.Cos(AircraftBody.Rotation.X) * AircraftPhysics.RotationalVelocity.Y + MathF.Sin(AircraftBody.Rotation.X) * AircraftPhysics.RotationalVelocity.Z,
-        MathF.Cos(AircraftBody.Rotation.X) * AircraftPhysics.RotationalVelocity.Z + MathF.Sin(AircraftBody.Rotation.X) * AircraftPhysics.RotationalVelocity.Y);
+      //var unRolledRotation = new Vector3(
+      //  AircraftPhysics.RotationalVelocity.X,
+      //  MathF.Cos(AircraftBody.Rotation.X) * AircraftPhysics.RotationalVelocity.Y + MathF.Sin(AircraftBody.Rotation.X) * AircraftPhysics.RotationalVelocity.Z,
+      //  MathF.Cos(AircraftBody.Rotation.X) * AircraftPhysics.RotationalVelocity.Z + MathF.Sin(AircraftBody.Rotation.X) * AircraftPhysics.RotationalVelocity.Y);
 
-      AircraftPhysics.RotationalVelocity = Converters.Round(unRolledRotation);
+      // FIXME:
+      var unRolledRotation = Matrix.Identity;
+
+      AircraftPhysics.Update(
+        deltaVelocity: Vector3.Zero,
+        deltaAccelleration: Vector3.Zero,
+        deltaRotationalVelocity: rotationalVelocity);
 
 #if false
       LogFile.WriteLine($@"{DateTime.Now}
@@ -273,56 +285,56 @@ namespace Wings.Core.Aircraft
         LastShotTimestamp = DateTime.Now;
       }
 
-      if (keyboard.IsKeyDown(Keys.F1))
-      {
-        AircraftBody.ForwardDirection = Vector2.Zero;
-        AircraftBody.ForwardUnitVector = new Vector3(1, 0, 0);
-        AircraftBody.Position = Vector3.Zero;
-        AircraftBody.Rotation = Vector3.Zero;
-        AircraftPhysics.Acceleration = Vector3.Zero;
-        AircraftPhysics.RotationalVelocity = Vector3.Zero;
-        AircraftPhysics.Velocity = new Vector3(30, 0, 0);
-        AircraftPhysics.VelocityUnitVector = new Vector3(1, 0, 0);
-        Mouse.SetPosition(750, 300);
-      }
-      else if (keyboard.IsKeyDown(Keys.F2))
-      {
-        AircraftBody.Position = Vector3.Zero;
-        AircraftBody.Rotation = new Vector3(0, 0, Angles.QuarterCircle);
-        AircraftBody.ForwardDirection = new Vector2(0, Angles.QuarterCircle);
-        AircraftBody.ForwardUnitVector = new Vector3(0, 1, 0);
-        AircraftPhysics.Acceleration = Vector3.Zero;
-        AircraftPhysics.RotationalVelocity = Vector3.Zero;
-        AircraftPhysics.Velocity = new Vector3(0, 30, 0);
-        AircraftPhysics.VelocityUnitVector = new Vector3(0, 1, 0);
-        Mouse.SetPosition(750, 300);
-      }
-      else if (keyboard.IsKeyDown(Keys.F3))
-      {
-        AircraftBody.Position = Vector3.Zero;
-        AircraftBody.Rotation = new Vector3(0, 0, -Angles.QuarterCircle);
-        AircraftBody.ForwardDirection = new Vector2(0, -Angles.QuarterCircle);
-        AircraftBody.ForwardUnitVector = new Vector3(0, -1, 0);
-        AircraftPhysics.Acceleration = Vector3.Zero;
-        AircraftPhysics.RotationalVelocity = Vector3.Zero;
-        AircraftPhysics.Velocity = new Vector3(0, -30, 0);
-        AircraftPhysics.VelocityUnitVector = new Vector3(0, -1, 0);
-        Mouse.SetPosition(750, 300);
-        System.Diagnostics.Debugger.Break();
-      }
-      else if (keyboard.IsKeyDown(Keys.F4))
-      {
-        AircraftBody.Position = Vector3.Zero;
-        AircraftBody.Rotation = new Vector3(0, MathHelper.ToRadians(20), -Angles.QuarterCircle);
-        AircraftBody.ForwardDirection = new Vector2(AircraftBody.Rotation.Y, AircraftBody.Rotation.Z);
-        AircraftBody.ForwardUnitVector = Converters.RotationRadiansToUnitVector(AircraftBody.ForwardDirection);
-        AircraftPhysics.Acceleration = Vector3.Zero;
-        AircraftPhysics.RotationalVelocity = Vector3.Zero;
-        AircraftPhysics.Velocity = AircraftBody.ForwardUnitVector * 30f;
-        AircraftPhysics.VelocityUnitVector = AircraftBody.ForwardUnitVector;
-        Mouse.SetPosition(750, 300);
-        System.Diagnostics.Debugger.Break();
-      }
+      //if (keyboard.IsKeyDown(Keys.F1))
+      //{
+      //  AircraftBody.ForwardDirection = Vector2.Zero;
+      //  AircraftBody.ForwardUnitVector = new Vector3(1, 0, 0);
+      //  AircraftBody.Position = Vector3.Zero;
+      //  AircraftBody.Rotation = Vector3.Zero;
+      //  AircraftPhysics.Acceleration = Vector3.Zero;
+      //  AircraftPhysics.RotationalVelocity = Vector3.Zero;
+      //  AircraftPhysics.Velocity = new Vector3(30, 0, 0);
+      //  AircraftPhysics.VelocityUnitVector = new Vector3(1, 0, 0);
+      //  Mouse.SetPosition(750, 300);
+      //}
+      //else if (keyboard.IsKeyDown(Keys.F2))
+      //{
+      //  AircraftBody.Position = Vector3.Zero;
+      //  AircraftBody.Rotation = new Vector3(0, 0, Angles.QuarterCircle);
+      //  AircraftBody.ForwardDirection = new Vector2(0, Angles.QuarterCircle);
+      //  AircraftBody.ForwardUnitVector = new Vector3(0, 1, 0);
+      //  AircraftPhysics.Acceleration = Vector3.Zero;
+      //  AircraftPhysics.RotationalVelocity = Vector3.Zero;
+      //  AircraftPhysics.Velocity = new Vector3(0, 30, 0);
+      //  AircraftPhysics.VelocityUnitVector = new Vector3(0, 1, 0);
+      //  Mouse.SetPosition(750, 300);
+      //}
+      //else if (keyboard.IsKeyDown(Keys.F3))
+      //{
+      //  AircraftBody.Position = Vector3.Zero;
+      //  AircraftBody.Rotation = new Vector3(0, 0, -Angles.QuarterCircle);
+      //  AircraftBody.ForwardDirection = new Vector2(0, -Angles.QuarterCircle);
+      //  AircraftBody.ForwardUnitVector = new Vector3(0, -1, 0);
+      //  AircraftPhysics.Acceleration = Vector3.Zero;
+      //  AircraftPhysics.RotationalVelocity = Vector3.Zero;
+      //  AircraftPhysics.Velocity = new Vector3(0, -30, 0);
+      //  AircraftPhysics.VelocityUnitVector = new Vector3(0, -1, 0);
+      //  Mouse.SetPosition(750, 300);
+      //  System.Diagnostics.Debugger.Break();
+      //}
+      //else if (keyboard.IsKeyDown(Keys.F4))
+      //{
+      //  AircraftBody.Position = Vector3.Zero;
+      //  AircraftBody.Rotation = new Vector3(0, MathHelper.ToRadians(20), -Angles.QuarterCircle);
+      //  AircraftBody.ForwardDirection = new Vector2(AircraftBody.Rotation.Y, AircraftBody.Rotation.Z);
+      //  AircraftBody.ForwardUnitVector = Converters.RotationRadiansToUnitVector(AircraftBody.ForwardDirection);
+      //  AircraftPhysics.Acceleration = Vector3.Zero;
+      //  AircraftPhysics.RotationalVelocity = Vector3.Zero;
+      //  AircraftPhysics.Velocity = AircraftBody.ForwardUnitVector * 30f;
+      //  AircraftPhysics.VelocityUnitVector = AircraftBody.ForwardUnitVector;
+      //  Mouse.SetPosition(750, 300);
+      //  System.Diagnostics.Debugger.Break();
+      //}
 
       if (keyboard.IsKeyDown(Keys.F10))
       {

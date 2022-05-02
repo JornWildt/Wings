@@ -5,22 +5,39 @@ namespace Wings.Core.Physics
 {
   public class PhysicsComponent : Component
   {
-    public Vector3 Velocity { get; set; }
+    // Primary values
+    public Vector3 Velocity { get; protected set; }
 
-    public Vector3 Acceleration { get; set; }
+    public Vector3 Acceleration { get; protected set; }
 
-    public Vector3 RotationalVelocity { get; set; }
+    public Matrix RotationalVelocity { get; protected set; }
 
-    public Vector3 VelocityUnitVector { get; set; }
+    // Derived values
+    public Vector3 VelocityUnitVector { get; protected set; }
 
 
-    public PhysicsComponent(EntityId id, Vector3 velocity, Vector3 acceleration, Vector3 rotationalVelocity)
+    public PhysicsComponent(EntityId id, Vector3 velocity, Vector3 acceleration, Matrix rotationalVelocity)
       : base(id)
     {
       Velocity = velocity;
       Acceleration = acceleration;
       RotationalVelocity = rotationalVelocity;
-      VelocityUnitVector = velocity.Length() > 0 ? Vector3.Normalize(velocity) : new Vector3(0,0,0);
+      RefreshDerivedValues();
+    }
+
+
+    public void Update(Vector3 deltaVelocity, Vector3 deltaAccelleration, Matrix deltaRotationalVelocity)
+    {
+      Velocity += deltaVelocity;
+      Acceleration += deltaAccelleration;
+      RotationalVelocity = deltaRotationalVelocity;
+      RefreshDerivedValues();
+    }
+
+
+    protected void RefreshDerivedValues()
+    {
+      VelocityUnitVector = Velocity.Length() > 0 ? Vector3.Normalize(Velocity) : new Vector3(0, 0, 0);
     }
   }
 }

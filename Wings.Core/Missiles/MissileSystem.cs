@@ -31,7 +31,8 @@ namespace Wings.Core.Missiles
     {
       EntityId id = EntityId.NewId();
 
-      BodyComponent body = new BodyComponent(id, position, Vector3.Normalize(velocity));
+      // FIXME: set orientation
+      BodyComponent body = new BodyComponent(id, position, Matrix.Identity);
 
       return new Entity(
         id,
@@ -39,7 +40,7 @@ namespace Wings.Core.Missiles
         {
           new NamedComponent(id, "Missile"),
           body,
-          new PhysicsComponent(id, velocity, Vector3.Zero, Vector3.Zero),
+          new PhysicsComponent(id, velocity, Vector3.Zero, Matrix.Identity),
           new Sprite3DComponent(id, content, "Missile", 3f),
           new MissileComponent(id, body)
         });
