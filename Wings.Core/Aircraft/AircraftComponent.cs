@@ -175,7 +175,7 @@ namespace Wings.Core.Aircraft
   Roll / pitch / yaw        : {MathHelper.ToDegrees(AircraftBody.Rotation.X):###.##} / {MathHelper.ToDegrees(AircraftBody.Rotation.Y):###.##} / {MathHelper.ToDegrees(AircraftBody.Rotation.Z):###.##}
   Ground speed              : {AircraftPhysics.Velocity.X:###.##} / {AircraftPhysics.Velocity.Y:###.##} / {AircraftPhysics.Velocity.Z:###.##}
   Ground speed dir (p/y)    : {MathHelper.ToDegrees(velocityDirection.X):###.##} / {MathHelper.ToDegrees(velocityDirection.Y):###.##}
-  Direction (p/y)           : {MathHelper.ToDegrees(AircraftBody.Direction.X):###.##} / {MathHelper.ToDegrees(AircraftBody.Direction.Y):###.##}
+  Direction (p/y)           : {MathHelper.ToDegrees(AircraftBody.ForwardDirection.X):###.##} / {MathHelper.ToDegrees(AircraftBody.ForwardDirection.Y):###.##}
   Relative speed (p/y)      : {MathHelper.ToDegrees(relativeWindDirection.X):###.##} / {MathHelper.ToDegrees(relativeWindDirection.Y):###.##}
   Relative speed            : {relativeAirspeed.X:###.##} / {relativeAirspeed.Y:###.##} / {relativeAirspeed.Z:###.##}
   Angle of attack           : {MathHelper.ToDegrees(AngleOfAttack.X):###.##} / {MathHelper.ToDegrees(AngleOfAttack.Y):###.##} / {MathHelper.ToDegrees(AngleOfAttack.Z):###.##}
@@ -275,10 +275,7 @@ namespace Wings.Core.Aircraft
 
       if (keyboard.IsKeyDown(Keys.F1))
       {
-        AircraftBody.ForwardDirection = Vector2.Zero;
-        AircraftBody.ForwardUnitVector = new Vector3(1, 0, 0);
-        AircraftBody.Position = Vector3.Zero;
-        AircraftBody.Rotation = Vector3.Zero;
+        AircraftBody.Update(new Vector3(0, 0, 1000), Vector3.Zero);
         AircraftPhysics.Acceleration = Vector3.Zero;
         AircraftPhysics.RotationalVelocity = Vector3.Zero;
         AircraftPhysics.Velocity = new Vector3(30, 0, 0);
@@ -287,10 +284,7 @@ namespace Wings.Core.Aircraft
       }
       else if (keyboard.IsKeyDown(Keys.F2))
       {
-        AircraftBody.Position = Vector3.Zero;
-        AircraftBody.Rotation = new Vector3(0, 0, Angles.QuarterCircle);
-        AircraftBody.ForwardDirection = new Vector2(0, Angles.QuarterCircle);
-        AircraftBody.ForwardUnitVector = new Vector3(0, 1, 0);
+        AircraftBody.Update(Vector3.Zero, new Vector3(0, 0, Angles.QuarterCircle));
         AircraftPhysics.Acceleration = Vector3.Zero;
         AircraftPhysics.RotationalVelocity = Vector3.Zero;
         AircraftPhysics.Velocity = new Vector3(0, 30, 0);
@@ -299,10 +293,7 @@ namespace Wings.Core.Aircraft
       }
       else if (keyboard.IsKeyDown(Keys.F3))
       {
-        AircraftBody.Position = Vector3.Zero;
-        AircraftBody.Rotation = new Vector3(0, 0, -Angles.QuarterCircle);
-        AircraftBody.ForwardDirection = new Vector2(0, -Angles.QuarterCircle);
-        AircraftBody.ForwardUnitVector = new Vector3(0, -1, 0);
+        AircraftBody.Update(Vector3.Zero, new Vector3(0, 0, -Angles.QuarterCircle));
         AircraftPhysics.Acceleration = Vector3.Zero;
         AircraftPhysics.RotationalVelocity = Vector3.Zero;
         AircraftPhysics.Velocity = new Vector3(0, -30, 0);
@@ -312,10 +303,7 @@ namespace Wings.Core.Aircraft
       }
       else if (keyboard.IsKeyDown(Keys.F4))
       {
-        AircraftBody.Position = Vector3.Zero;
-        AircraftBody.Rotation = new Vector3(0, MathHelper.ToRadians(20), -Angles.QuarterCircle);
-        AircraftBody.ForwardDirection = new Vector2(AircraftBody.Rotation.Y, AircraftBody.Rotation.Z);
-        AircraftBody.ForwardUnitVector = Converters.RotationRadiansToUnitVector(AircraftBody.ForwardDirection);
+        AircraftBody.Update(Vector3.Zero, new Vector3(0, MathHelper.ToRadians(20), Angles.QuarterCircle));
         AircraftPhysics.Acceleration = Vector3.Zero;
         AircraftPhysics.RotationalVelocity = Vector3.Zero;
         AircraftPhysics.Velocity = AircraftBody.ForwardUnitVector * 30f;
